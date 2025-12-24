@@ -1,0 +1,387 @@
+:root {
+    --ytm-focus-primary: #ffffff;
+    --ytm-focus-secondary: rgba(255, 255, 255, 0.7);
+    --ytm-focus-accent: #ff0000;
+    /* Default, will be dynaimc */
+    --ytm-focus-bg: #000000;
+    --ytm-focus-font-family: 'Roboto', 'Arial', sans-serif;
+    --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+body::after {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--minha-cor-tema);
+    opacity: 0.05;
+    pointer-events: none;
+    z-index: 9998;
+    mix-blend-mode: overlay;
+    transition: background-color 1s ease;
+}
+
+ytmusic-chip-cloud-chip-renderer[aria-selected="true"],
+ytmusic-play-button-renderer,
+#progress-bar.ytmusic-player-bar {
+    --ytmusic-color-white1: var(--minha-cor-tema) !important;
+}
+
+.title.ytmusic-player-bar {
+    color: var(--minha-cor-tema) !important;
+}
+
+#btn-cinema-mode {
+    background: transparent;
+    border: none;
+    color: var(--ytmusic-text-secondary);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: background 0.2s, color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#btn-cinema-mode:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+#btn-cinema-mode svg {
+    width: 24px;
+    height: 24px;
+    fill: currentColor;
+}
+
+#focus-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: var(--ytm-focus-bg);
+    z-index: 9999;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-evenly;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s var(--ease-out-expo);
+    font-family: var(--ytm-focus-font-family);
+    backdrop-filter: blur(50px) brightness(0.4);
+}
+
+#focus-overlay.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+#focus-overlay::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    right: -50%;
+    bottom: -50%;
+    background-image: var(--ytm-album-art-url);
+    background-size: cover;
+    background-position: center;
+    opacity: 0.6;
+    z-index: -1;
+    filter: blur(50px) brightness(0.5) saturate(140%);
+    animation: breathe 20s infinite alternate ease-in-out;
+    transition: background-image 1s ease-in-out;
+}
+
+.focus-visualizer {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 6px;
+    height: 30px;
+    margin-bottom: 20px;
+}
+
+.focus-visualizer .bar {
+    width: 6px;
+    background: var(--ytm-focus-primary);
+    border-radius: 4px;
+    height: 100%;
+    transform-origin: bottom;
+    transition: transform 0.05s linear;
+    will-change: transform;
+}
+
+#focus-overlay.is-playing .focus-visualizer .bar {
+    animation: equalize 1s infinite alternate;
+}
+
+#focus-overlay.is-playing .focus-visualizer .bar:nth-child(1) {
+    animation-delay: -0.4s;
+}
+
+#focus-overlay.is-playing .focus-visualizer .bar:nth-child(2) {
+    animation-delay: -0.2s;
+}
+
+#focus-overlay.is-playing .focus-visualizer .bar:nth-child(3) {
+    animation-delay: -0.6s;
+}
+
+#focus-overlay.is-playing .focus-visualizer .bar:nth-child(4) {
+    animation-delay: -0.8s;
+}
+
+.focus-close-btn {
+    position: absolute;
+    top: 30px;
+    right: 30px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+    transition: background 0.2s;
+}
+
+.focus-close-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.focus-close-btn svg {
+    width: 20px;
+    height: 20px;
+    fill: currentColor;
+}
+
+.focus-player {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    max-width: 40%;
+    animation: slideUp 0.8s var(--ease-out-expo);
+}
+
+.focus-album-art {
+    width: 400px;
+    height: 400px;
+    border-radius: 12px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    margin-bottom: 40px;
+    transition: transform 0.3s var(--ease-out-expo);
+    object-fit: cover;
+}
+
+.focus-album-art:hover {
+    transform: scale(1.02);
+}
+
+.focus-info h1 {
+    font-size: 2.5rem;
+    color: var(--ytm-focus-primary);
+    margin: 0 0 10px 0;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.focus-info h2 {
+    font-size: 1.5rem;
+    color: var(--ytm-focus-secondary);
+    margin: 0;
+    font-weight: 400;
+}
+
+.focus-progress-container {
+    width: 100%;
+    max-width: 400px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+    margin-top: 30px;
+    margin-bottom: 30px;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+}
+
+.focus-progress-fill {
+    height: 100%;
+    background: var(--ytm-focus-primary);
+    width: 0%;
+    transition: width 0.1s linear;
+}
+
+.focus-time-display {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 400px;
+    color: var(--ytm-focus-secondary);
+    font-size: 0.8rem;
+    margin-top: -20px;
+    margin-bottom: 20px;
+}
+
+.focus-controls {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    align-items: center;
+}
+
+.focus-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--ytm-focus-primary);
+    transition: transform 0.1s, color 0.2s;
+}
+
+.focus-btn svg {
+    fill: currentColor;
+    width: 32px;
+    height: 32px;
+}
+
+.focus-btn.play-pause svg {
+    width: 48px;
+    height: 48px;
+}
+
+.focus-btn:hover {
+    transform: scale(1.1);
+    color: #fff;
+}
+
+.focus-btn:active {
+    transform: scale(0.95);
+}
+
+.focus-next {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    max-width: 25%;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 30px;
+    border-radius: 16px;
+    backdrop-filter: blur(10px);
+    animation: fadeIn 1s ease-out 0.3s backwards;
+}
+
+.focus-next h3 {
+    color: var(--ytm-focus-secondary);
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+    margin-bottom: 20px;
+}
+
+.next-track-card {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.next-art {
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+    background: #333;
+    object-fit: cover;
+}
+
+.next-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.next-title {
+    color: var(--ytm-focus-primary);
+    font-size: 1rem;
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+
+.next-artist {
+    color: var(--ytm-focus-secondary);
+    font-size: 0.9rem;
+}
+
+.focus-close-btn {
+    position: absolute;
+    top: 30px;
+    right: 30px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+    transition: background 0.2s;
+}
+
+.focus-close-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.focus-close-btn svg {
+    width: 20px;
+    height: 20px;
+    fill: currentColor;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes breathe {
+    0% {
+        transform: scale(1) rotate(0deg);
+    }
+
+    100% {
+        transform: scale(1.1) rotate(2deg);
+    }
+}
+
+body.focus-mode-active {
+    overflow: hidden !important;
+}
+
+ytmusic-mealbar-promo-renderer {
+    display: none !important;
+}
