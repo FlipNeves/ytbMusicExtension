@@ -1,0 +1,48 @@
+{
+    "manifest_version": 3,
+    "name": "YTM Player",
+    "version": "1.0.0",
+    "description": "Experiência imersiva para YouTube Music com modo foco",
+    "action": {
+        "default_title": "Abrir YouTube Music"
+    },
+    "background": {
+        "service_worker": "assets/background.js",
+        "type": "module"
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "https://music.youtube.com/*"
+            ],
+            "css": [
+                "assets/content.css"
+            ],
+            "js": [
+                "assets/content.js"
+            ]
+        },
+        {
+            "matches": [
+                "https://music.youtube.com/*"
+            ],
+            "js": [
+                "assets/injector.js"
+            ]
+        }
+    ],
+    "web_accessible_resources": [
+        {
+            "resources": [
+                "interceptor.js"
+            ],
+            "matches": [
+                "https://music.youtube.com/*"
+            ]
+        }
+    ],
+    "permissions": [
+        "activeTab",
+        "scripting"
+    ]
+}

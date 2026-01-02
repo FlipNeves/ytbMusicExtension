@@ -1,8 +1,7 @@
 :root {
     --ytm-focus-primary: #ffffff;
     --ytm-focus-secondary: rgba(255, 255, 255, 0.7);
-    --ytm-focus-accent: #ff0000;
-    /* Default, will be dynaimc */
+    --ytm-focus-accent: #cabbbb;
     --ytm-focus-bg: #000000;
     --ytm-focus-font-family: 'Roboto', 'Arial', sans-serif;
     --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
@@ -169,7 +168,7 @@ ytmusic-play-button-renderer,
     flex-direction: column;
     align-items: center;
     text-align: center;
-    max-width: 40%;
+    max-width: 50%;
     animation: slideUp 0.8s var(--ease-out-expo);
 }
 
@@ -187,12 +186,20 @@ ytmusic-play-button-renderer,
     transform: scale(1.02);
 }
 
+.focus-info {
+    width: 100%;
+    min-height: 120px;
+}
+
 .focus-info h1 {
     font-size: 2.5rem;
     color: var(--ytm-focus-primary);
     margin: 0 0 10px 0;
     font-weight: 700;
     line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .focus-info h2 {
@@ -200,6 +207,9 @@ ytmusic-play-button-renderer,
     color: var(--ytm-focus-secondary);
     margin: 0;
     font-weight: 400;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .focus-progress-container {
@@ -273,6 +283,8 @@ ytmusic-play-button-renderer,
     flex-direction: column;
     justify-content: center;
     max-width: 25%;
+    min-height: 200px;
+    max-height: 200px;
     background: rgba(255, 255, 255, 0.05);
     padding: 30px;
     border-radius: 16px;
@@ -312,11 +324,17 @@ ytmusic-play-button-renderer,
     font-size: 1rem;
     font-weight: 500;
     margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .next-artist {
     color: var(--ytm-focus-secondary);
     font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .focus-close-btn {
