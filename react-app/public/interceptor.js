@@ -188,7 +188,6 @@ function extractNextTrackFromPlayer() {
 
 function extractTrackFromQueueItem(item, debug = false) {
     try {
-        const img = item.querySelector('yt-img-shadow img, img');
         const title = item.querySelector('.song-title, .title');
         const artist = item.querySelector('.byline, .secondary-flex-columns');
 
@@ -199,7 +198,6 @@ function extractTrackFromQueueItem(item, debug = false) {
             return {
                 nextTitle: title.textContent?.trim() || '',
                 nextArtist: artist?.textContent?.split('•')[0]?.trim() || '',
-                nextArt: img?.src || ''
             };
         }
 

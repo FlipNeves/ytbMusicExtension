@@ -1,5 +1,5 @@
-chrome.action.onClicked.addListener((_tab: chrome.tabs.Tab) => {
-  chrome.windows.getCurrent({}, (_window: chrome.windows.Window) => {
+chrome.action.onClicked.addListener(() => {
+  chrome.windows.getCurrent({}, () => {
     chrome.windows.create({
       url: "https://music.youtube.com",
       type: "popup",

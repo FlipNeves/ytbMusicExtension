@@ -6,56 +6,54 @@ export const useVisualizer = (visualizerRef: React.RefObject<HTMLDivElement | nu
     const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
     const animationIdRef = useRef<number | null>(null);
 
-    const draw = () => {
-        if (!analyserRef.current || !visualizerRef.current) {
-            animationIdRef.current = requestAnimationFrame(draw);
-            return;
-        };
-
-        const dataArray = new Uint8Array(analyserRef.current.frequencyBinCount);
-        analyserRef.current.getByteFrequencyData(dataArray);
-
-        const bars = visualizerRef.current.querySelectorAll<HTMLDivElement>('.bar');
-        for (let i = 0; i < bars.length; i++) {
-            const val = dataArray[i] || 0;
-            const scale = (val / 255) * 1.5;
-            bars[i].style.transform = `scaleY(${Math.max(0.05, scale)})`;
-        }
-
-        animationIdRef.current = requestAnimationFrame(draw);
-    };
-
     useEffect(() => {
         const initAudioContext = () => {
             const video = document.querySelector('video');
-            if (!video) {
-                return;
-            }
+            if (!video) return false;
 
             if (!audioCtxRef.current) {
                 try {
                     video.crossOrigin = "anonymous";
-                    const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+                    const AudioContext = window.AudioContext || (window as unknown as { webkitAudioContext: typeof window.AudioContext }).webkitAudioContext;
                     audioCtxRef.current = new AudioContext();
                     analyserRef.current = audioCtxRef.current.createAnalyser();
                     analyserRef.current.fftSize = 32;
                     sourceRef.current = audioCtxRef.current.createMediaElementSource(video);
                     sourceRef.current.connect(analyserRef.current);
                     analyserRef.current.connect(audioCtxRef.current.destination);
-                } catch (e) {
+                } catch {
+                    return false;
                 }
             }
+            return true;
+        };
+
+        const draw = () => {
+            if (analyserRef.current && visualizerRef.current) {
+                const dataArray = new Uint8Array(analyserRef.current.frequencyBinCount);
+                analyserRef.current.getByteFrequencyData(dataArray);
+
+                const bars = visualizerRef.current.querySelectorAll<HTMLDivElement>('.bar');
+                const barCount = bars.length;
+
+                for (let i = 0; i < barCount; i++) {
+                    const dataIndex = Math.floor(dataArray.length / barCount * i);
+                    const val = dataArray[dataIndex] || 0;
+                    const scale = (val / 255) * 1.5;
+                    bars[i].style.transform = `scaleY(${Math.max(0.05, scale)})`;
+                }
+            }
+            animationIdRef.current = requestAnimationFrame(draw);
         };
 
         if (isEnabled) {
-            if (!audioCtxRef.current) {
-                initAudioContext();
-            }
-            if (audioCtxRef.current?.state === 'suspended') {
-                audioCtxRef.current.resume();
-            }
-            if (animationIdRef.current === null) {
-                draw();
+            if (initAudioContext()) {
+                if (audioCtxRef.current?.state === 'suspended') {
+                    audioCtxRef.current.resume();
+                }
+                if (animationIdRef.current === null) {
+                    animationIdRef.current = requestAnimationFrame(draw);
+                }
             }
         } else {
             if (animationIdRef.current) {
@@ -65,6 +63,10 @@ export const useVisualizer = (visualizerRef: React.RefObject<HTMLDivElement | nu
         }
 
         return () => {
+            if (animationIdRef.current) {
+                cancelAnimationFrame(animationIdRef.current);
+                animationIdRef.current = null;
+            }
         };
     }, [isEnabled, visualizerRef]);
 
@@ -73,9 +75,6 @@ export const useVisualizer = (visualizerRef: React.RefObject<HTMLDivElement | nu
             if (audioCtxRef.current) {
                 audioCtxRef.current.close();
             }
-            if (animationIdRef.current) {
-                cancelAnimationFrame(animationIdRef.current);
-            }
-        }
+        };
     }, []);
 };

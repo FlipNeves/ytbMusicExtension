@@ -24,7 +24,7 @@ const extractColor = (
         ctx.drawImage(img, 0, 0, 1, 1);
         const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
         resolve({ r, g, b });
-      } catch (e) {
+      } catch {
         resolve({ r: 255, g: 0, b: 0 });
       }
     };
@@ -59,7 +59,6 @@ export const useYTMObserver = () => {
   });
   const [isPlaying, setIsPlaying] = useState(false);
   const [upNextInfo, setUpNextInfo] = useState({
-    nextArt: "",
     nextTitle: "...",
     nextArtist: "...",
   });
@@ -76,7 +75,6 @@ export const useYTMObserver = () => {
         setUpNextInfo({
           nextTitle: data.nextTitle || '...',
           nextArtist: data.nextArtist || '...',
-          nextArt: data.nextArt || '',
         });
         return;
       }
@@ -87,10 +85,29 @@ export const useYTMObserver = () => {
         try {
           let nextTrack = null;
 
+          interface PlaylistItem {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            playlistPanelVideoRenderer: any;
+          }
+
+          type Tab = {
+            tabRenderer?: {
+              content?: {
+                musicQueueRenderer?: {
+                  content: {
+                    playlistPanelRenderer: {
+                      contents: PlaylistItem[];
+                    }
+                  }
+                }
+              }
+            }
+          };
+
           if (endpoint === 'next' || endpoint === 'player') {
             if (data?.contents?.singleColumnMusicWatchNextResultsRenderer?.tabbedRenderer?.watchNextTabbedResultsRenderer?.tabs) {
               const tabs = data.contents.singleColumnMusicWatchNextResultsRenderer.tabbedRenderer.watchNextTabbedResultsRenderer.tabs;
-              const queueTab = tabs.find((tab: any) => tab.tabRenderer?.content?.musicQueueRenderer);
+              const queueTab = tabs.find((tab: Tab) => tab.tabRenderer?.content?.musicQueueRenderer);
 
               if (queueTab) {
                 const queueItems = queueTab.tabRenderer.content.musicQueueRenderer.content.playlistPanelRenderer.contents;
@@ -107,11 +124,6 @@ export const useYTMObserver = () => {
               }
             }
 
-            if (!nextTrack && data?.playerResponse) {
-              const pr = data.playerResponse;
-              if (pr.videoDetails) {
-              }
-            }
           }
 
           if (endpoint === 'music/get_queue' && data?.queueDatas) {
@@ -125,20 +137,18 @@ export const useYTMObserver = () => {
           }
 
           if (nextTrack) {
-            const title = nextTrack.title?.runs?.[0]?.text || nextTrack.title?.simpleText || 'Título desconhecido';
-            const artist = nextTrack.longBylineText?.runs?.[0]?.text ||
-              nextTrack.shortBylineText?.runs?.[0]?.text || 'Artista desconhecido';
-            const thumbnails = nextTrack.thumbnail?.thumbnails || [];
-            const art = thumbnails.length > 0 ?
-              thumbnails[thumbnails.length - 1].url : '';
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const track = nextTrack as any;
+            const title = track.title?.runs?.[0]?.text || track.title?.simpleText || 'Título desconhecido';
+            const artist = track.longBylineText?.runs?.[0]?.text ||
+              track.shortBylineText?.runs?.[0]?.text || 'Artista desconhecido';
 
             setUpNextInfo({
               nextTitle: title,
               nextArtist: artist,
-              nextArt: art,
             });
           }
-        } catch (e) {
+        } catch {
         }
       }
     };
