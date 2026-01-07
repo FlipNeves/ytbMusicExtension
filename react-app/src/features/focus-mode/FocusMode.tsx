@@ -1,12 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
 import './FocusMode.css';
-import Player from './Player';
-import Controls from './Controls';
 import UpNext from './UpNext';
-import Visualizer from './Visualizer';
 import FocusButton from './FocusButton';
 import { useYTMObserver } from '../../hooks/useYTMObserver';
 import { useVisualizer } from '../../hooks/useVisualizer';
+import FocusPlayer from './FocusPlayer';
 
 const FocusMode = () => {
     const [isActive, setIsActive] = useState(false);
@@ -42,16 +40,7 @@ const FocusMode = () => {
                         </svg>
                     </button>
 
-                    <div className="focus-player">
-                        <Visualizer ref={visualizerRef} />
-                        <Player {...songInfo} />
-                        <Controls 
-                            isPlaying={isPlaying}
-                            onPlayPause={() => document.querySelector<HTMLElement>('#play-pause-button')?.click()}
-                            onNext={() => document.querySelector<HTMLElement>('.next-button')?.click()}
-                            onPrev={() => document.querySelector<HTMLElement>('.previous-button')?.click()}
-                        />
-                    </div>
+                    <FocusPlayer visualizerRef={visualizerRef} songInfo={songInfo} isPlaying={isPlaying} />
 
                     <UpNext {...upNextInfo} />
                 </div>

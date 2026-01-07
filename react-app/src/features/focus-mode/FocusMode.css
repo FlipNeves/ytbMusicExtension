@@ -72,7 +72,7 @@ ytmusic-play-button-renderer,
     pointer-events: none;
     transition: opacity 0.5s var(--ease-out-expo);
     font-family: var(--ytm-focus-font-family);
-    backdrop-filter: blur(50px) brightness(0.4);
+    backdrop-filter: blur(25px) brightness(0.6);
 }
 
 #focus-overlay.visible {
@@ -92,7 +92,7 @@ ytmusic-play-button-renderer,
     background-position: center;
     opacity: 0.6;
     z-index: -1;
-    filter: blur(50px) brightness(0.5) saturate(140%);
+    filter: blur(25px) brightness(0.7) saturate(140%);
     animation: breathe 20s infinite alternate ease-in-out;
     transition: background-image 1s ease-in-out;
 }
