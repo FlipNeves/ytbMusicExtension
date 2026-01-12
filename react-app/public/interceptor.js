@@ -1,26 +1,5 @@
 const originalFetch = window.fetch;
 
-window.fetch = async (...args) => {
-    const [url, config] = args;
-    const response = await originalFetch(...args);
-
-    if (typeof url === 'string' && url.includes('/youtubei/v1/')) {
-        const endpoint = url.split('/youtubei/v1/')[1]?.split('?')[0];
-
-        if (endpoint === 'next' || endpoint === 'player' || endpoint === 'music/get_queue') {
-            const clonedResponse = response.clone();
-            clonedResponse.json().then(data => {
-                window.postMessage({
-                    type: 'YTM_API_RESPONSE',
-                    endpoint: endpoint,
-                    data: data
-                }, '*');
-            }).catch(() => { });
-        }
-    }
-
-    return response;
-};
 
 const originalXHROpen = XMLHttpRequest.prototype.open;
 const originalXHRSend = XMLHttpRequest.prototype.send;
@@ -28,26 +7,6 @@ const originalXHRSend = XMLHttpRequest.prototype.send;
 XMLHttpRequest.prototype.open = function (method, url, ...rest) {
     this._url = url;
     return originalXHROpen.call(this, method, url, ...rest);
-};
-
-XMLHttpRequest.prototype.send = function (...args) {
-    if (this._url && this._url.includes('/youtubei/v1/')) {
-        const endpoint = this._url.split('/youtubei/v1/')[1]?.split('?')[0];
-
-        if (endpoint === 'next' || endpoint === 'player' || endpoint === 'music/get_queue') {
-            this.addEventListener('load', function () {
-                try {
-                    const data = JSON.parse(this.responseText);
-                    window.postMessage({
-                        type: 'YTM_API_RESPONSE',
-                        endpoint: endpoint,
-                        data: data
-                    }, '*');
-                } catch (e) { }
-            });
-        }
-    }
-    return originalXHRSend.call(this, ...args);
 };
 
 let lastExtractTime = 0;

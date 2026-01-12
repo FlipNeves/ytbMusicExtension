@@ -1,11 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 
-const formatTime = (seconds: number) => {
-  if (!seconds || isNaN(seconds)) return "0:00";
-  const m = Math.floor(seconds / 60);
-  const s = Math.floor(seconds % 60);
-  return `${m}:${s < 10 ? "0" : ""}${s}`;
-};
+
 
 const extractColor = (
   imgSrc: string
@@ -65,6 +60,8 @@ export const useYTMObserver = () => {
 
   const lastAlbumArtRef = useRef("");
   const lastSongIdRef = useRef("");
+
+  const songChangePendingRef = useRef(false);
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -161,6 +158,35 @@ export const useYTMObserver = () => {
   }, []);
 
   const syncPlayerState = useCallback(async () => {
+    const titleEl = document.querySelector('.content-info-wrapper .title');
+    const artistEl = document.querySelector('.content-info-wrapper .byline');
+    const newTitle = titleEl?.textContent || 'Música';
+    const newArtist = artistEl?.textContent?.split('•')[0].trim() || 'Artista';
+    const songId = `${newTitle}-${newArtist}`;
+
+    // Detecta se houve troca de música
+    const songChanged = songId !== lastSongIdRef.current && lastSongIdRef.current !== '';
+
+    if (songChanged) {
+      // FORÇA reset imediato de TUDO
+      lastSongIdRef.current = songId;
+      songChangePendingRef.current = false;
+
+      setSongInfo({
+        albumArt: '',
+        title: newTitle,
+        artist: newArtist,
+        currentTime: '0:00',
+        totalTime: '0:00',
+        progress: 0,
+      });
+    }
+
+    // Atualiza songId ref na primeira vez
+    if (lastSongIdRef.current === '') {
+      lastSongIdRef.current = songId;
+    }
+
     const artEl = document.querySelector<HTMLImageElement>('.thumbnail-image-wrapper img');
     let newSrc = '';
     if (artEl) {
@@ -178,48 +204,88 @@ export const useYTMObserver = () => {
       }
     }
 
-    const titleEl = document.querySelector('.content-info-wrapper .title');
-    const artistEl = document.querySelector('.content-info-wrapper .byline');
-    const newTitle = titleEl?.textContent || 'Música';
-    const newArtist = artistEl?.textContent?.split('•')[0].trim() || 'Artista';
-    const songId = `${newTitle}-${newArtist}`;
+    // Pega o tempo do DOM do YouTube Music
+    const timeInfoEl = document.querySelector('ytmusic-player-bar .time-info');
+    const progressBarEl = document.querySelector<HTMLElement>('ytmusic-player-bar #progress-bar');
+
+    let currentTimeStr = '0:00';
+    let totalTimeStr = '0:00';
+    let progress = 0;
+
+    if (timeInfoEl && !songChanged) {
+      const timeText = timeInfoEl.textContent || '';
+      const parts = timeText.split(' / ').map(s => s.trim());
+      currentTimeStr = parts[0] || '0:00';
+      totalTimeStr = parts[1] || '0:00';
+    }
+
+    if (progressBarEl && !songChanged) {
+      const value = parseFloat(progressBarEl.getAttribute('value') || '0');
+      progress = value;
+    }
 
     const video = document.querySelector('video');
-    let curr = video?.currentTime || 0;
-    const total = video?.duration || 0;
-
-    if (songId !== lastSongIdRef.current && lastSongIdRef.current !== '') {
-      curr = 0;
-    }
-    lastSongIdRef.current = songId;
 
     setSongInfo(info => ({
       ...info,
       albumArt: newSrc,
       title: newTitle,
       artist: newArtist,
-      currentTime: formatTime(curr),
-      totalTime: formatTime(total),
-      progress: total > 0 ? (curr / total) * 100 : 0,
+      currentTime: songChanged ? '0:00' : currentTimeStr,
+      totalTime: totalTimeStr,
+      progress: songChanged ? 0 : progress,
     }));
-
     setIsPlaying(video ? !video.paused : false);
 
   }, []);
 
   const updateTime = useCallback(() => {
-    const video = document.querySelector('video');
-    if (video) {
-      const curr = video.currentTime;
-      const total = video.duration || 0;
+    // Verifica songId do DOM
+    const titleEl = document.querySelector('.content-info-wrapper .title');
+    const artistEl = document.querySelector('.content-info-wrapper .byline');
+    const newTitle = titleEl?.textContent || 'Música';
+    const newArtist = artistEl?.textContent?.split('•')[0].trim() || 'Artista';
+    const songId = `${newTitle}-${newArtist}`;
+
+    // Verifica se houve troca de música pelo songId
+    const songIdChanged = songId !== lastSongIdRef.current && lastSongIdRef.current !== '';
+
+    if (songIdChanged || songChangePendingRef.current) {
+      // Reset imediato
       setSongInfo(info => ({
         ...info,
-        currentTime: formatTime(curr),
-        totalTime: formatTime(total),
-        progress: total > 0 ? (curr / total) * 100 : 0,
+        currentTime: '0:00',
+        progress: 0,
+      }));
+
+      songChangePendingRef.current = false;
+      syncPlayerState();
+      return;
+    }
+
+    // Pega o tempo do DOM do YouTube Music (mais confiável que video.currentTime)
+    const timeInfoEl = document.querySelector('ytmusic-player-bar .time-info');
+    const progressBarEl = document.querySelector<HTMLElement>('ytmusic-player-bar #progress-bar');
+
+    if (timeInfoEl) {
+      const timeText = timeInfoEl.textContent || '';
+      const [currentTimeStr, totalTimeStr] = timeText.split(' / ').map(s => s.trim());
+
+      // Calcula progresso do slider ou do tempo
+      let progress = 0;
+      if (progressBarEl) {
+        const value = parseFloat(progressBarEl.getAttribute('value') || '0');
+        progress = value; // O slider já retorna 0-100
+      }
+
+      setSongInfo(info => ({
+        ...info,
+        currentTime: currentTimeStr || info.currentTime,
+        totalTime: totalTimeStr || info.totalTime,
+        progress: progress,
       }));
     }
-  }, []);
+  }, [syncPlayerState]);
 
   useEffect(() => {
     const playerBar = document.querySelector('ytmusic-player-bar');
@@ -230,6 +296,10 @@ export const useYTMObserver = () => {
     });
     observer.observe(playerBar, { subtree: true, attributes: true, childList: true });
 
+    const handleEnded = () => {
+      songChangePendingRef.current = true;
+    };
+
     const bindVideo = () => {
       const video = document.querySelector('video');
       if (video && !video.dataset.focusModeBound) {
@@ -238,6 +308,7 @@ export const useYTMObserver = () => {
         video.addEventListener('pause', syncPlayerState);
         video.addEventListener('timeupdate', updateTime);
         video.addEventListener('loadeddata', syncPlayerState);
+        video.addEventListener('ended', handleEnded);
       }
     }
 
@@ -252,6 +323,7 @@ export const useYTMObserver = () => {
         video.removeEventListener('pause', syncPlayerState);
         video.removeEventListener('timeupdate', updateTime);
         video.removeEventListener('loadeddata', syncPlayerState);
+        video.removeEventListener('ended', handleEnded);
       }
     }
   }, [syncPlayerState, updateTime]);
