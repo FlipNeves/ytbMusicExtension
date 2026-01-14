@@ -419,7 +419,7 @@ ytmusic-play-button-renderer,
 .focus-next h3 {
     color: var(--ytm-focus-secondary);
     text-transform: uppercase;
-    font-size: 0.8rem;
+    font-size: 1rem;
     letter-spacing: 1px;
     margin-bottom: 20px;
 }
@@ -448,7 +448,7 @@ ytmusic-play-button-renderer,
 
 .next-title {
     color: var(--ytm-focus-primary);
-    font-size: 1rem;
+    font-size: 1.4rem;
     font-weight: 500;
     margin-bottom: 4px;
     word-wrap: break-word;
@@ -457,7 +457,7 @@ ytmusic-play-button-renderer,
 
 .next-artist {
     color: var(--ytm-focus-secondary);
-    font-size: 0.9rem;
+    font-size: 1.2rem;
     word-wrap: break-word;
     overflow-wrap: break-word;
 }
@@ -536,10 +536,10 @@ ytmusic-mealbar-promo-renderer {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 10px 16px;
+    padding: 10px 10px;
     background: rgba(255, 255, 255, 0.08);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 24px;
+    border-radius: 50%;
     color: rgba(255, 255, 255, 0.6);
     font-size: 0.85rem;
     font-family: var(--ytm-focus-font-family);
@@ -556,8 +556,8 @@ ytmusic-mealbar-promo-renderer {
 }
 
 .focus-pix-btn svg {
-    width: 18px;
-    height: 18px;
+    width: 36px;
+    height: 36px;
     fill: currentColor;
 }
 
@@ -567,29 +567,30 @@ ytmusic-mealbar-promo-renderer {
 
 .pix-modal-overlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.8);
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 10001;
-    animation: fadeIn 0.3s ease-out;
+    backdrop-filter: blur(6px);
+    animation: fadeIn 0.25s ease-out;
 }
 
 .pix-modal {
-    background: linear-gradient(145deg, #1a1a2e, #16213e);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
-    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    width: 360px;
+    max-width: 90vw;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 32px;
+    border-radius: 16px;
+    backdrop-filter: blur(10px);
+    color: #fff;
     text-align: center;
-    position: relative;
-    max-width: 360px;
-    width: 90%;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-    animation: slideUp 0.4s var(--ease-out-expo);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.45);
+    animation: fadeIn 0.4s ease-out;
 }
 
 .pix-modal-close {
