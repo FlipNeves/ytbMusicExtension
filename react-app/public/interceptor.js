@@ -1,5 +1,32 @@
 const originalFetch = window.fetch;
 
+window.addEventListener('message', (event) => {
+    if (event.source !== window) return;
+
+    if (event.data?.type === 'YTM_SET_VOLUME') {
+        const value = event.data.value;
+        const volumeSlider = document.querySelector('ytmusic-player-bar #volume-slider');
+
+        if (volumeSlider) {
+            volumeSlider.value = value;
+
+            if (typeof volumeSlider._setImmediateValue === 'function') {
+                volumeSlider._setImmediateValue(value);
+            }
+            if (typeof volumeSlider._updateKnob === 'function') {
+                volumeSlider._updateKnob(value);
+            }
+
+            volumeSlider.dispatchEvent(new CustomEvent('immediate-value-change', { bubbles: true }));
+            volumeSlider.dispatchEvent(new CustomEvent('value-change', { bubbles: true }));
+
+            const video = document.querySelector('video');
+            if (video) {
+                video.volume = Math.pow(value / 100, 2);
+            }
+        }
+    }
+});
 
 const originalXHROpen = XMLHttpRequest.prototype.open;
 const originalXHRSend = XMLHttpRequest.prototype.send;

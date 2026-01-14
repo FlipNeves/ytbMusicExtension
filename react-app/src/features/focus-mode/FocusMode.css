@@ -186,40 +186,76 @@ ytmusic-play-button-renderer,
 }
 
 .focus-info {
-    width: 600px;
-    max-width: 600px;
-    height: 150px;
-    max-height: 150px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+    text-align: center;
 }
 
 .focus-info h1 {
-    font-size: 2.5rem;
+    font-size: 1.8rem;
     color: var(--ytm-focus-primary);
-    margin: 0 0 10px 0;
+    margin: 0 0 8px 0;
     font-weight: 700;
     line-height: 1.2;
 }
 
 .focus-info h2 {
-    font-size: 1.5rem;
+    font-size: 1.1rem;
     color: var(--ytm-focus-secondary);
     margin: 0;
     font-weight: 400;
 }
 
+.focus-song-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.focus-like-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.6);
+    transition: all 0.2s ease;
+}
+
+.focus-like-btn svg {
+    width: 22px;
+    height: 22px;
+}
+
+.focus-like-btn:hover {
+    border-color: #ff6b9d;
+    color: #ff6b9d;
+}
+
+.focus-like-btn.active {
+    border-color: #ff6b9d;
+    color: #ff6b9d;
+}
+
+.focus-progress-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    max-width: 400px;
+    margin-bottom: 20px;
+}
+
 .focus-progress-container {
-    width: 250px;
-    max-width: 250px;
+    flex: 1;
     height: 4px;
     background: rgba(255, 255, 255, 0.2);
     border-radius: 2px;
-    margin-top: 20px;
-    margin-bottom: 20px;
     overflow: hidden;
-    position: relative;
     cursor: pointer;
 }
 
@@ -230,22 +266,25 @@ ytmusic-play-button-renderer,
     transition: width 0.1s linear;
 }
 
-.focus-time-display {
-    display: flex;
-    justify-content: space-between;
-    width: 250px;
-    max-width: 250px;
+.focus-time {
+    font-size: 0.85rem;
     color: var(--ytm-focus-secondary);
-    font-size: 0.8rem;
-    margin-top: -20px;
-    margin-bottom: 20px;
+    min-width: 40px;
+}
+
+.focus-time.curr {
+    text-align: right;
+}
+
+.focus-time.total {
+    text-align: left;
 }
 
 .focus-controls {
     display: flex;
     justify-content: center;
-    gap: 30px;
     align-items: center;
+    gap: 24px;
 }
 
 .focus-btn {
@@ -274,6 +313,62 @@ ytmusic-play-button-renderer,
 
 .focus-btn:active {
     transform: scale(0.95);
+}
+
+.focus-volume-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+}
+
+.focus-volume-container .volume-icon {
+    width: 24px;
+    height: 24px;
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.focus-volume-container:hover .volume-icon {
+    color: var(--ytm-focus-primary);
+}
+
+.focus-volume-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 0;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+    opacity: 0;
+    transition: width 0.2s ease, opacity 0.2s ease;
+}
+
+.focus-volume-container:hover .focus-volume-slider {
+    width: 80px;
+    opacity: 1;
+}
+
+.focus-volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    background: var(--ytm-focus-primary);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.focus-volume-slider::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    background: var(--ytm-focus-primary);
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
 }
 
 .focus-next {

@@ -9,7 +9,7 @@ import PixDonation from './PixDonation';
 
 const FocusMode = () => {
     const [isActive, setIsActive] = useState(false);
-    const { songInfo, isPlaying, upNextInfo } = useYTMObserver();
+    const { songInfo, isPlaying, upNextInfo, volume, isLiked, setVolume, toggleLike } = useYTMObserver();
 
     const visualizerRef = useRef<HTMLDivElement>(null);
     useVisualizer(visualizerRef, isPlaying && isActive);
@@ -41,7 +41,15 @@ const FocusMode = () => {
                         </svg>
                     </button>
 
-                    <FocusPlayer visualizerRef={visualizerRef} songInfo={songInfo} isPlaying={isPlaying} />
+                    <FocusPlayer
+                        visualizerRef={visualizerRef}
+                        songInfo={songInfo}
+                        isPlaying={isPlaying}
+                        volume={volume}
+                        isLiked={isLiked}
+                        onVolumeChange={setVolume}
+                        onLike={toggleLike}
+                    />
 
                     <UpNext {...upNextInfo} />
 

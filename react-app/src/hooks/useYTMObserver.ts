@@ -53,6 +53,8 @@ export const useYTMObserver = () => {
     progress: 0,
   });
   const [isPlaying, setIsPlaying] = useState(false);
+  const [volume, setVolumeState] = useState(50);
+  const [isLiked, setIsLiked] = useState(false);
   const [upNextInfo, setUpNextInfo] = useState({
     nextTitle: "...",
     nextArtist: "...",
@@ -60,7 +62,6 @@ export const useYTMObserver = () => {
 
   const lastAlbumArtRef = useRef("");
   const lastSongIdRef = useRef("");
-
   const songChangePendingRef = useRef(false);
 
   useEffect(() => {
@@ -301,5 +302,45 @@ export const useYTMObserver = () => {
     }
   }, [syncPlayerState, updateTime]);
 
-  return { songInfo, isPlaying, upNextInfo };
+  const setVolume = useCallback((value: number) => {
+    window.postMessage({ type: 'YTM_SET_VOLUME', value: value }, '*');
+    setVolumeState(value);
+  }, []);
+
+  const toggleLike = useCallback(() => {
+    const likeBtn = document.querySelector('ytmusic-player-bar ytmusic-like-button-renderer #button-shape-like button') as HTMLElement;
+    if (likeBtn) {
+      likeBtn.click();
+      setTimeout(() => {
+        const updatedBtn = document.querySelector('ytmusic-player-bar ytmusic-like-button-renderer #button-shape-like button');
+        const isNowLiked = updatedBtn?.getAttribute('aria-pressed') === 'true';
+        setIsLiked(isNowLiked);
+      }, 200);
+    }
+  }, []);
+
+  useEffect(() => {
+    const syncVolumeAndLike = () => {
+      const volumeSlider = document.querySelector('ytmusic-player-bar #volume-slider') as any;
+      if (volumeSlider && typeof volumeSlider.value === 'number') {
+        setVolumeState(volumeSlider.value);
+      } else {
+        const video = document.querySelector('video') as HTMLVideoElement;
+        if (video) {
+          setVolumeState(Math.round(Math.sqrt(video.volume) * 100));
+        }
+      }
+
+      const likeBtn = document.querySelector('ytmusic-player-bar ytmusic-like-button-renderer #button-shape-like button');
+      if (likeBtn) {
+        setIsLiked(likeBtn.getAttribute('aria-pressed') === 'true');
+      }
+    };
+
+    syncVolumeAndLike();
+    const interval = setInterval(syncVolumeAndLike, 500); // Sincroniza mais frequentemente
+    return () => clearInterval(interval);
+  }, []);
+
+  return { songInfo, isPlaying, upNextInfo, volume, isLiked, setVolume, toggleLike };
 };
