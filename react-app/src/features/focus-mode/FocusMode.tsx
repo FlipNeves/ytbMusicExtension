@@ -5,6 +5,7 @@ import FocusButton from './FocusButton';
 import { useYTMObserver } from '../../hooks/useYTMObserver';
 import { useVisualizer } from '../../hooks/useVisualizer';
 import FocusPlayer from './FocusPlayer';
+import PixDonation from './PixDonation';
 
 const FocusMode = () => {
     const [isActive, setIsActive] = useState(false);
@@ -43,6 +44,8 @@ const FocusMode = () => {
                     <FocusPlayer visualizerRef={visualizerRef} songInfo={songInfo} isPlaying={isPlaying} />
 
                     <UpNext {...upNextInfo} />
+
+                    <PixDonation />
                 </div>
             )}
         </>
@@ -50,3 +53,4 @@ const FocusMode = () => {
 };
 
 export default FocusMode;
+

@@ -164,11 +164,9 @@ export const useYTMObserver = () => {
     const newArtist = artistEl?.textContent?.split('•')[0].trim() || 'Artista';
     const songId = `${newTitle}-${newArtist}`;
 
-    // Detecta se houve troca de música
     const songChanged = songId !== lastSongIdRef.current && lastSongIdRef.current !== '';
 
     if (songChanged) {
-      // FORÇA reset imediato de TUDO
       lastSongIdRef.current = songId;
       songChangePendingRef.current = false;
 
@@ -182,7 +180,6 @@ export const useYTMObserver = () => {
       });
     }
 
-    // Atualiza songId ref na primeira vez
     if (lastSongIdRef.current === '') {
       lastSongIdRef.current = songId;
     }
@@ -204,9 +201,8 @@ export const useYTMObserver = () => {
       }
     }
 
-    // Pega o tempo do DOM do YouTube Music
     const timeInfoEl = document.querySelector('ytmusic-player-bar .time-info');
-    const progressBarEl = document.querySelector<HTMLElement>('ytmusic-player-bar #progress-bar');
+    const progressBarEl = document.querySelector('ytmusic-player-bar #progress-bar');
 
     let currentTimeStr = '0:00';
     let totalTimeStr = '0:00';
@@ -220,8 +216,9 @@ export const useYTMObserver = () => {
     }
 
     if (progressBarEl && !songChanged) {
-      const value = parseFloat(progressBarEl.getAttribute('value') || '0');
-      progress = value;
+      const value = parseFloat(progressBarEl.getAttribute('aria-valuenow') || '0');
+      const max = parseFloat(progressBarEl.getAttribute('aria-valuemax') || '100');
+      progress = max > 0 ? (value / max) * 100 : 0;
     }
 
     const video = document.querySelector('video');
@@ -240,42 +237,18 @@ export const useYTMObserver = () => {
   }, []);
 
   const updateTime = useCallback(() => {
-    // Verifica songId do DOM
-    const titleEl = document.querySelector('.content-info-wrapper .title');
-    const artistEl = document.querySelector('.content-info-wrapper .byline');
-    const newTitle = titleEl?.textContent || 'Música';
-    const newArtist = artistEl?.textContent?.split('•')[0].trim() || 'Artista';
-    const songId = `${newTitle}-${newArtist}`;
-
-    // Verifica se houve troca de música pelo songId
-    const songIdChanged = songId !== lastSongIdRef.current && lastSongIdRef.current !== '';
-
-    if (songIdChanged || songChangePendingRef.current) {
-      // Reset imediato
-      setSongInfo(info => ({
-        ...info,
-        currentTime: '0:00',
-        progress: 0,
-      }));
-
-      songChangePendingRef.current = false;
-      syncPlayerState();
-      return;
-    }
-
-    // Pega o tempo do DOM do YouTube Music (mais confiável que video.currentTime)
     const timeInfoEl = document.querySelector('ytmusic-player-bar .time-info');
-    const progressBarEl = document.querySelector<HTMLElement>('ytmusic-player-bar #progress-bar');
+    const progressBarEl = document.querySelector('ytmusic-player-bar #progress-bar');
 
     if (timeInfoEl) {
       const timeText = timeInfoEl.textContent || '';
       const [currentTimeStr, totalTimeStr] = timeText.split(' / ').map(s => s.trim());
 
-      // Calcula progresso do slider ou do tempo
       let progress = 0;
       if (progressBarEl) {
-        const value = parseFloat(progressBarEl.getAttribute('value') || '0');
-        progress = value; // O slider já retorna 0-100
+        const value = parseFloat(progressBarEl.getAttribute('aria-valuenow') || '0');
+        const max = parseFloat(progressBarEl.getAttribute('aria-valuemax') || '100');
+        progress = max > 0 ? (value / max) * 100 : 0;
       }
 
       setSongInfo(info => ({
@@ -285,7 +258,7 @@ export const useYTMObserver = () => {
         progress: progress,
       }));
     }
-  }, [syncPlayerState]);
+  }, []);
 
   useEffect(() => {
     const playerBar = document.querySelector('ytmusic-player-bar');
