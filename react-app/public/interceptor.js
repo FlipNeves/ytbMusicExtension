@@ -26,6 +26,14 @@ window.addEventListener('message', (event) => {
             }
         }
     }
+
+    if (event.data?.type === 'YTM_SEEK') {
+        const time = event.data.time;
+        const video = document.querySelector('video');
+        if (video && typeof time === 'number') {
+            video.currentTime = time;
+        }
+    }
 });
 
 const originalXHROpen = XMLHttpRequest.prototype.open;

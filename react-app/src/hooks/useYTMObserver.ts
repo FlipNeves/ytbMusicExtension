@@ -51,6 +51,7 @@ export const useYTMObserver = () => {
     currentTime: "0:00",
     totalTime: "0:00",
     progress: 0,
+    duration: 0,
   });
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolumeState] = useState(50);
@@ -178,6 +179,7 @@ export const useYTMObserver = () => {
         currentTime: '0:00',
         totalTime: '0:00',
         progress: 0,
+        duration: 0,
       });
     }
 
@@ -240,16 +242,23 @@ export const useYTMObserver = () => {
   const updateTime = useCallback(() => {
     const timeInfoEl = document.querySelector('ytmusic-player-bar .time-info');
     const progressBarEl = document.querySelector('ytmusic-player-bar #progress-bar');
+    const video = document.querySelector('video') as HTMLVideoElement;
 
     if (timeInfoEl) {
       const timeText = timeInfoEl.textContent || '';
       const [currentTimeStr, totalTimeStr] = timeText.split(' / ').map(s => s.trim());
 
       let progress = 0;
+      let durationSec = 0;
       if (progressBarEl) {
         const value = parseFloat(progressBarEl.getAttribute('aria-valuenow') || '0');
         const max = parseFloat(progressBarEl.getAttribute('aria-valuemax') || '100');
+        durationSec = max;
         progress = max > 0 ? (value / max) * 100 : 0;
+      }
+
+      if (video && video.duration && !isNaN(video.duration)) {
+        durationSec = video.duration;
       }
 
       setSongInfo(info => ({
@@ -257,6 +266,7 @@ export const useYTMObserver = () => {
         currentTime: currentTimeStr || info.currentTime,
         totalTime: totalTimeStr || info.totalTime,
         progress: progress,
+        duration: durationSec,
       }));
     }
   }, []);
@@ -307,6 +317,10 @@ export const useYTMObserver = () => {
     setVolumeState(value);
   }, []);
 
+  const seekTo = useCallback((timeInSeconds: number) => {
+    window.postMessage({ type: 'YTM_SEEK', time: timeInSeconds }, '*');
+  }, []);
+
   const toggleLike = useCallback(() => {
     const likeBtn = document.querySelector('ytmusic-player-bar ytmusic-like-button-renderer #button-shape-like button') as HTMLElement;
     if (likeBtn) {
@@ -338,9 +352,10 @@ export const useYTMObserver = () => {
     };
 
     syncVolumeAndLike();
-    const interval = setInterval(syncVolumeAndLike, 500); // Sincroniza mais frequentemente
+    const interval = setInterval(syncVolumeAndLike, 500);
     return () => clearInterval(interval);
   }, []);
 
-  return { songInfo, isPlaying, upNextInfo, volume, isLiked, setVolume, toggleLike };
+  return { songInfo, isPlaying, upNextInfo, volume, isLiked, setVolume, toggleLike, seekTo };
 };
+

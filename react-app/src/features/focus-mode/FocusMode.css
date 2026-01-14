@@ -255,8 +255,35 @@ ytmusic-play-button-renderer,
     height: 4px;
     background: rgba(255, 255, 255, 0.2);
     border-radius: 2px;
-    overflow: hidden;
+    position: relative;
     cursor: pointer;
+    transition: height 0.2s ease, background 0.2s ease;
+}
+
+.focus-progress-container::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: 0;
+    right: 0;
+    bottom: -10px;
+    z-index: 1;
+}
+
+.focus-progress-container:hover {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.focus-progress-thumb {
+    position: absolute;
+    top: 50%;
+    width: 12px;
+    height: 12px;
+    background: white;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
 }
 
 .focus-progress-fill {

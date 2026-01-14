@@ -11,6 +11,7 @@ interface FocusPlayerProps {
     isLiked: boolean;
     onVolumeChange: (value: number) => void;
     onLike: () => void;
+    onSeek: (time: number) => void;
 }
 
 const FocusPlayer = ({
@@ -21,6 +22,7 @@ const FocusPlayer = ({
     isLiked,
     onVolumeChange,
     onLike,
+    onSeek,
 }: FocusPlayerProps) => {
     return (
         <div className="focus-player">
@@ -32,8 +34,10 @@ const FocusPlayer = ({
                 currentTime={songInfo.currentTime || '0:00'}
                 totalTime={songInfo.totalTime || '0:00'}
                 progress={songInfo.progress || 0}
+                duration={songInfo.duration || 0}
                 isLiked={isLiked}
                 onLike={onLike}
+                onSeek={onSeek}
             />
             <Controls
                 isPlaying={isPlaying}
@@ -54,3 +58,4 @@ const FocusPlayer = ({
 };
 
 export default FocusPlayer;
+

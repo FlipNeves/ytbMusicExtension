@@ -9,7 +9,7 @@ import PixDonation from './PixDonation';
 
 const FocusMode = () => {
     const [isActive, setIsActive] = useState(false);
-    const { songInfo, isPlaying, upNextInfo, volume, isLiked, setVolume, toggleLike } = useYTMObserver();
+    const { songInfo, isPlaying, upNextInfo, volume, isLiked, setVolume, toggleLike, seekTo } = useYTMObserver();
 
     const visualizerRef = useRef<HTMLDivElement>(null);
     useVisualizer(visualizerRef, isPlaying && isActive);
@@ -49,6 +49,7 @@ const FocusMode = () => {
                         isLiked={isLiked}
                         onVolumeChange={setVolume}
                         onLike={toggleLike}
+                        onSeek={seekTo}
                     />
 
                     <UpNext {...upNextInfo} />

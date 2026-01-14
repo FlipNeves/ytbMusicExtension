@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 
 interface PlayerProps {
     albumArt: string;
@@ -7,11 +7,39 @@ interface PlayerProps {
     currentTime: string;
     totalTime: string;
     progress: number;
+    duration?: number;
     isLiked?: boolean;
     onLike?: () => void;
+    onSeek?: (time: number) => void;
 }
 
-const Player: React.FC<PlayerProps> = ({ albumArt, title, artist, currentTime, totalTime, progress, isLiked, onLike }) => {
+const Player: React.FC<PlayerProps> = ({
+    albumArt, title, artist,
+    currentTime, totalTime,
+    progress, duration,
+    isLiked, onLike, onSeek
+}) => {
+
+    const progressRef = useRef<HTMLDivElement>(null);
+    const [hovered, setHovered] = useState(false);
+    const [thumbX, setThumbX] = useState(0);
+
+    const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
+        if (!onSeek || !duration) return;
+        const rect = e.currentTarget.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        const percentage = clickX / rect.width;
+        onSeek(percentage * duration);
+    };
+
+    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+        if (!progressRef.current) return;
+        const rect = progressRef.current.getBoundingClientRect();
+        let x = e.clientX - rect.left;
+        x = Math.max(0, Math.min(x, rect.width));
+        setThumbX(x);
+    };
+
     return (
         <div className="focus-player-content">
             <img src={albumArt} className="focus-album-art" crossOrigin="anonymous" />
@@ -21,10 +49,10 @@ const Player: React.FC<PlayerProps> = ({ albumArt, title, artist, currentTime, t
                     <h1 className="focus-title">{title}</h1>
                     <h2 className="focus-artist">{artist}</h2>
                 </div>
+
                 {onLike && (
                     <button
                         className={`focus-like-btn ${isLiked ? 'active' : ''}`}
-                        title={isLiked ? "Remover curtida" : "Curtir"}
                         onClick={onLike}
                     >
                         <svg viewBox="0 0 24 24" fill={isLiked ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
@@ -36,9 +64,28 @@ const Player: React.FC<PlayerProps> = ({ albumArt, title, artist, currentTime, t
 
             <div className="focus-progress-wrapper">
                 <span className="focus-time curr">{currentTime}</span>
-                <div className="focus-progress-container">
-                    <div className="focus-progress-fill" style={{ width: `${progress}%` }}></div>
+
+                <div
+                    ref={progressRef}
+                    className="focus-progress-container"
+                    onClick={handleProgressClick}
+                    onMouseEnter={() => setHovered(true)}
+                    onMouseLeave={() => setHovered(false)}
+                    onMouseMove={handleMouseMove}
+                >
+                    <div
+                        className="focus-progress-fill"
+                        style={{ width: `${progress}%` }}
+                    />
+
+                    {hovered && (
+                        <div
+                            className="focus-progress-thumb"
+                            style={{ left: thumbX }}
+                        />
+                    )}
                 </div>
+
                 <span className="focus-time total">{totalTime}</span>
             </div>
         </div>
@@ -46,5 +93,3 @@ const Player: React.FC<PlayerProps> = ({ albumArt, title, artist, currentTime, t
 };
 
 export default Player;
-
-
