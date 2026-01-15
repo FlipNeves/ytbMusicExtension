@@ -273,10 +273,11 @@ ytmusic-play-button-renderer,
 .focus-progress-wrapper {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 12px;
     width: 100%;
     max-width: 400px;
-    margin-bottom: 20px;
+    margin: 0 auto 20px auto;
 }
 
 .focus-progress-container {
@@ -721,7 +722,7 @@ ytmusic-mealbar-promo-renderer {
     display: none;
     flex-direction: column;
     width: 0;
-    max-height: 400px;
+    height: 500px;
     background: rgba(255, 255, 255, 0.05);
     padding: 24px 0;
     border-radius: 16px;
@@ -733,7 +734,7 @@ ytmusic-mealbar-promo-renderer {
 
 .focus-lyrics.visible {
     display: flex;
-    width: 280px;
+    width: 320px;
     padding: 24px;
     opacity: 1;
 }
@@ -744,6 +745,7 @@ ytmusic-mealbar-promo-renderer {
     font-size: 1rem;
     letter-spacing: 1px;
     margin: 0 0 20px 0;
+    flex-shrink: 0;
 }
 
 .focus-lyrics-content {
@@ -764,7 +766,7 @@ ytmusic-mealbar-promo-renderer {
 
 .lyrics-text {
     color: var(--ytm-focus-primary);
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     line-height: 1.8;
     white-space: pre-wrap;
     font-family: var(--ytm-focus-font-family);
@@ -774,15 +776,15 @@ ytmusic-mealbar-promo-renderer {
 .synced-lyrics {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 16px;
 }
 
 .lyric-line {
     color: rgba(255, 255, 255, 0.4);
-    font-size: 1.2rem;
-    line-height: 1.6;
+    font-size: 1.1rem;
+    line-height: 1.5;
     font-family: var(--ytm-focus-font-family);
-    transition: all 0.3s ease;
+    transition: color 0.3s ease, font-weight 0.3s ease;
 }
 
 .lyric-line.past {
@@ -791,9 +793,7 @@ ytmusic-mealbar-promo-renderer {
 
 .lyric-line.active {
     color: var(--ytm-focus-primary);
-    font-size: 1.4rem;
     font-weight: 600;
-    transform: scale(1.02);
 }
 
 .lyrics-loading,

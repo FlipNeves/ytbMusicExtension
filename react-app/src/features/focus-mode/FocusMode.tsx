@@ -47,6 +47,15 @@ const FocusMode = () => {
                         </svg>
                     </button>
 
+                    
+
+                    <Lyrics
+                        title={songInfo.title}
+                        artist={songInfo.artist}
+                        isVisible={showLyrics}
+                        currentTime={songInfo.currentTimeSec}
+                    />
+
                     <FocusPlayer
                         visualizerRef={visualizerRef}
                         songInfo={songInfo}
@@ -58,13 +67,6 @@ const FocusMode = () => {
                         onSeek={seekTo}
                         showLyrics={showLyrics}
                         onToggleLyrics={toggleLyricsPanel}
-                    />
-
-                    <Lyrics
-                        title={songInfo.title}
-                        artist={songInfo.artist}
-                        isVisible={showLyrics}
-                        currentTime={songInfo.currentTimeSec}
                     />
 
                     <UpNext {...upNextInfo} />
