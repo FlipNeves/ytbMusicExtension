@@ -208,15 +208,16 @@ ytmusic-play-button-renderer,
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 16px;
+    gap: 40px;
     margin-bottom: 20px;
+    position: relative;
 }
 
-.focus-like-btn {
-    width: 44px;
-    height: 44px;
+.focus-action-btn {
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.3);
     background: transparent;
     cursor: pointer;
     display: flex;
@@ -226,19 +227,47 @@ ytmusic-play-button-renderer,
     transition: all 0.2s ease;
 }
 
-.focus-like-btn svg {
+.focus-action-btn svg {
     width: 22px;
     height: 22px;
 }
 
-.focus-like-btn:hover {
+.focus-action-btn:hover {
+    border-color: rgba(255, 255, 255, 0.8);
+    color: rgba(255, 255, 255, 1);
+}
+
+.focus-action-btn.active {
     border-color: #ff6b9d;
     color: #ff6b9d;
 }
 
-.focus-like-btn.active {
-    border-color: #ff6b9d;
-    color: #ff6b9d;
+.focus-copied-toast {
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 1.0rem;
+    font-weight: 500;
+    animation: toastFadeIn 0.3s ease-out;
+    white-space: nowrap;
+}
+
+@keyframes toastFadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
 }
 
 .focus-progress-wrapper {
@@ -414,6 +443,7 @@ ytmusic-play-button-renderer,
     backdrop-filter: blur(10px);
     animation: fadeIn 1s ease-out 0.3s backwards;
     overflow: hidden;
+    transition: transform 0.4s ease;
 }
 
 .focus-next h3 {
@@ -589,7 +619,7 @@ ytmusic-mealbar-promo-renderer {
     backdrop-filter: blur(10px);
     color: #fff;
     text-align: center;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.45);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
     animation: fadeIn 0.4s ease-out;
 }
 
@@ -684,4 +714,107 @@ ytmusic-mealbar-promo-renderer {
     color: rgba(255, 255, 255, 0.5);
     font-size: 0.85rem;
     margin: 0;
+}
+
+/* Lyrics Panel */
+.focus-lyrics {
+    display: none;
+    flex-direction: column;
+    width: 0;
+    max-height: 400px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 24px 0;
+    border-radius: 16px;
+    backdrop-filter: blur(10px);
+    overflow: hidden;
+    transition: width 0.4s ease, padding 0.4s ease, opacity 0.3s ease;
+    opacity: 0;
+}
+
+.focus-lyrics.visible {
+    display: flex;
+    width: 280px;
+    padding: 24px;
+    opacity: 1;
+}
+
+.focus-lyrics h3 {
+    color: var(--ytm-focus-secondary);
+    text-transform: uppercase;
+    font-size: 1rem;
+    letter-spacing: 1px;
+    margin: 0 0 20px 0;
+}
+
+.focus-lyrics-content {
+    flex: 1;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+.focus-lyrics-content::-webkit-scrollbar {
+    width: 4px;
+}
+
+.focus-lyrics-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+}
+
+.lyrics-text {
+    color: var(--ytm-focus-primary);
+    font-size: 1.2rem;
+    line-height: 1.8;
+    white-space: pre-wrap;
+    font-family: var(--ytm-focus-font-family);
+    margin: 0;
+}
+
+.synced-lyrics {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.lyric-line {
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 1.2rem;
+    line-height: 1.6;
+    font-family: var(--ytm-focus-font-family);
+    transition: all 0.3s ease;
+}
+
+.lyric-line.past {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.lyric-line.active {
+    color: var(--ytm-focus-primary);
+    font-size: 1.4rem;
+    font-weight: 600;
+    transform: scale(1.02);
+}
+
+.lyrics-loading,
+.lyrics-error {
+    color: var(--ytm-focus-secondary);
+    font-size: 1.1rem;
+    text-align: center;
+    padding: 20px 0;
+}
+
+/* Lyrics Toggle Button */
+.focus-btn.lyrics-toggle {
+    opacity: 0.6;
+    transition: all 0.2s ease;
+}
+
+.focus-btn.lyrics-toggle:hover {
+    opacity: 1;
+}
+
+.focus-btn.lyrics-toggle.active {
+    opacity: 1;
+    color: var(--ytm-focus-primary);
 }

@@ -52,6 +52,7 @@ export const useYTMObserver = () => {
     totalTime: "0:00",
     progress: 0,
     duration: 0,
+    currentTimeSec: 0,
   });
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolumeState] = useState(50);
@@ -180,6 +181,7 @@ export const useYTMObserver = () => {
         totalTime: '0:00',
         progress: 0,
         duration: 0,
+        currentTimeSec: 0,
       });
     }
 
@@ -261,12 +263,15 @@ export const useYTMObserver = () => {
         durationSec = video.duration;
       }
 
+      const currentSec = video && !isNaN(video.currentTime) ? video.currentTime : 0;
+
       setSongInfo(info => ({
         ...info,
         currentTime: currentTimeStr || info.currentTime,
         totalTime: totalTimeStr || info.totalTime,
         progress: progress,
         duration: durationSec,
+        currentTimeSec: currentSec,
       }));
     }
   }, []);

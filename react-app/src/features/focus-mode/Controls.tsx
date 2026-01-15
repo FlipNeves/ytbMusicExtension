@@ -7,6 +7,8 @@ interface ControlsProps {
     onPrev: () => void;
     volume: number;
     onVolumeChange: (value: number) => void;
+    showLyrics?: boolean;
+    onToggleLyrics?: () => void;
 }
 
 const Controls: React.FC<ControlsProps> = ({
@@ -16,9 +18,22 @@ const Controls: React.FC<ControlsProps> = ({
     onPrev,
     volume,
     onVolumeChange,
+    showLyrics,
+    onToggleLyrics,
 }) => {
     return (
         <div className="focus-controls">
+            {onToggleLyrics && (
+                <button
+                    className={`focus-btn lyrics-toggle ${showLyrics ? 'active' : ''}`}
+                    title="Mostrar Letra"
+                    onClick={onToggleLyrics}
+                >
+                    <svg viewBox="0 0 24 24" fill={showLyrics ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.5">
+                        <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" fill={showLyrics ? "currentColor" : "none"} />
+                    </svg>
+                </button>
+            )}
             <button className="focus-btn prev" title="Anterior" onClick={onPrev}>
                 <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"></path></svg>
             </button>
@@ -48,3 +63,4 @@ const Controls: React.FC<ControlsProps> = ({
 };
 
 export default Controls;
+

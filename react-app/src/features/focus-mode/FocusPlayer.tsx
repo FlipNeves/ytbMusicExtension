@@ -12,6 +12,8 @@ interface FocusPlayerProps {
     onVolumeChange: (value: number) => void;
     onLike: () => void;
     onSeek: (time: number) => void;
+    showLyrics: boolean;
+    onToggleLyrics: () => void;
 }
 
 const FocusPlayer = ({
@@ -23,6 +25,8 @@ const FocusPlayer = ({
     onVolumeChange,
     onLike,
     onSeek,
+    showLyrics,
+    onToggleLyrics,
 }: FocusPlayerProps) => {
     return (
         <div className="focus-player">
@@ -52,10 +56,13 @@ const FocusPlayer = ({
                 }
                 volume={volume}
                 onVolumeChange={onVolumeChange}
+                showLyrics={showLyrics}
+                onToggleLyrics={onToggleLyrics}
             />
         </div>
     );
 };
 
 export default FocusPlayer;
+
 

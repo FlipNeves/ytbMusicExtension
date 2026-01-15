@@ -34,6 +34,15 @@ window.addEventListener('message', (event) => {
             video.currentTime = time;
         }
     }
+
+    if (event.data?.type === 'YTM_GET_VIDEO_ID') {
+        let videoId = null;
+        try {
+            const playerBar = document.querySelector('ytmusic-player-bar');
+            videoId = playerBar?.playerApi?.getVideoData?.()?.video_id;
+        } catch { }
+        window.postMessage({ type: 'YTM_VIDEO_ID_RESPONSE', videoId: videoId }, '*');
+    }
 });
 
 const originalXHROpen = XMLHttpRequest.prototype.open;

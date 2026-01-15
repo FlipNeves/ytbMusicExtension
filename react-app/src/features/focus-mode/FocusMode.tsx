@@ -6,9 +6,11 @@ import { useYTMObserver } from '../../hooks/useYTMObserver';
 import { useVisualizer } from '../../hooks/useVisualizer';
 import FocusPlayer from './FocusPlayer';
 import PixDonation from './PixDonation';
+import Lyrics from './Lyrics';
 
 const FocusMode = () => {
     const [isActive, setIsActive] = useState(false);
+    const [showLyrics, setShowLyrics] = useState(false);
     const { songInfo, isPlaying, upNextInfo, volume, isLiked, setVolume, toggleLike, seekTo } = useYTMObserver();
 
     const visualizerRef = useRef<HTMLDivElement>(null);
@@ -28,6 +30,10 @@ const FocusMode = () => {
 
     const toggle = () => {
         setIsActive(prev => !prev);
+    };
+
+    const toggleLyricsPanel = () => {
+        setShowLyrics(prev => !prev);
     };
 
     return (
@@ -50,6 +56,15 @@ const FocusMode = () => {
                         onVolumeChange={setVolume}
                         onLike={toggleLike}
                         onSeek={seekTo}
+                        showLyrics={showLyrics}
+                        onToggleLyrics={toggleLyricsPanel}
+                    />
+
+                    <Lyrics
+                        title={songInfo.title}
+                        artist={songInfo.artist}
+                        isVisible={showLyrics}
+                        currentTime={songInfo.currentTimeSec}
                     />
 
                     <UpNext {...upNextInfo} />
@@ -62,4 +77,5 @@ const FocusMode = () => {
 };
 
 export default FocusMode;
+
 
