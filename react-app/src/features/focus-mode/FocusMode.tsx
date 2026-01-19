@@ -19,13 +19,24 @@ const FocusMode = () => {
     useEffect(() => {
         if (isActive) {
             document.body.style.overflow = 'hidden';
+
+            const handleKeyDown = (e: KeyboardEvent) => {
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                    setIsActive(false);
+                }
+            };
+
+            document.addEventListener('keydown', handleKeyDown, true);
+            return () => {
+                document.body.style.overflow = '';
+                document.removeEventListener('keydown', handleKeyDown, true);
+            };
         } else {
             document.body.style.overflow = '';
         }
-
-        return () => {
-            document.body.style.overflow = '';
-        };
     }, [isActive]);
 
     const toggle = () => {
@@ -47,7 +58,7 @@ const FocusMode = () => {
                         </svg>
                     </button>
 
-                    
+
 
                     <Lyrics
                         title={songInfo.title}
