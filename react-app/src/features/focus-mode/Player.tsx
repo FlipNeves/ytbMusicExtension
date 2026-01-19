@@ -9,15 +9,17 @@ interface PlayerProps {
     progress: number;
     duration?: number;
     isLiked?: boolean;
+    isPlaying?: boolean;
     onLike?: () => void;
     onSeek?: (time: number) => void;
+    onPlayPause?: () => void;
 }
 
 const Player: React.FC<PlayerProps> = ({
     albumArt, title, artist,
     currentTime, totalTime,
     progress, duration,
-    isLiked, onLike, onSeek
+    isLiked, isPlaying, onLike, onSeek, onPlayPause
 }) => {
 
     const progressRef = useRef<HTMLDivElement>(null);
@@ -76,7 +78,24 @@ const Player: React.FC<PlayerProps> = ({
 
     return (
         <div className="focus-player-content">
-            <img src={albumArt} className="focus-album-art" crossOrigin="anonymous" />
+            <div
+                className="focus-album-container"
+                onClick={onPlayPause}
+                title={isPlaying ? 'Pausar' : 'Reproduzir'}
+            >
+                <img src={albumArt} className="focus-album-art" crossOrigin="anonymous" />
+                <div className="focus-album-overlay">
+                    {isPlaying ? (
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+                        </svg>
+                    ) : (
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M8 5v14l11-7z" />
+                        </svg>
+                    )}
+                </div>
+            </div>
 
             <div className="focus-song-info">
                 <button className="focus-action-btn" onClick={handleShare} title="Compartilhar">

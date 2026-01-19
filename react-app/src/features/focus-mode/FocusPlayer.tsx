@@ -40,8 +40,12 @@ const FocusPlayer = ({
                 progress={songInfo.progress || 0}
                 duration={songInfo.duration || 0}
                 isLiked={isLiked}
+                isPlaying={isPlaying}
                 onLike={onLike}
                 onSeek={onSeek}
+                onPlayPause={() =>
+                    document.querySelector<HTMLElement>("#play-pause-button")?.click()
+                }
             />
             <Controls
                 isPlaying={isPlaying}
