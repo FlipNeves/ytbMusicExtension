@@ -55,6 +55,7 @@
     "permissions": [
         "activeTab",
         "scripting",
+        "storage",
         "tabs"
     ]
 }

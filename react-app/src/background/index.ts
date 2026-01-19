@@ -1,18 +1,33 @@
-let ytmWindowId: number | null = null;
+const getStoredWindowId = (): Promise<number | null> =>
+  new Promise(resolve => {
+    chrome.storage.local.get(["ytmWindowId"], (result: { ytmWindowId?: number }) => {
+      resolve(result.ytmWindowId ?? null);
+    });
+  });
 
-const openYTMWindow = (url: string = "https://music.youtube.com") => {
-  if (ytmWindowId !== null) {
-    chrome.windows.get(ytmWindowId, {}, (window) => {
+const setStoredWindowId = (windowId: number | null): Promise<void> =>
+  new Promise(resolve => {
+    if (windowId === null) {
+      chrome.storage.local.remove("ytmWindowId", () => resolve());
+    } else {
+      chrome.storage.local.set({ ytmWindowId: windowId }, () => resolve());
+    }
+  });
+
+const openYTMWindow = async (url: string = "https://music.youtube.com") => {
+  const storedWindowId = await getStoredWindowId();
+
+  if (storedWindowId !== null) {
+    chrome.windows.get(storedWindowId, {}, (window) => {
       if (chrome.runtime.lastError || !window) {
-        ytmWindowId = null;
         createYTMWindow(url);
       } else {
-        chrome.tabs.query({ windowId: ytmWindowId! }, (tabs) => {
+        chrome.tabs.query({ windowId: storedWindowId }, (tabs) => {
           if (tabs.length > 0 && tabs[0].id) {
-            chrome.tabs.update(tabs[0].id, { url: url });
+            chrome.tabs.update(tabs[0].id, { url });
           }
         });
-        chrome.windows.update(ytmWindowId!, { focused: true });
+        chrome.windows.update(storedWindowId, { focused: true });
       }
     });
   } else {
@@ -25,9 +40,9 @@ const createYTMWindow = (url: string) => {
     url: url,
     type: "popup",
     state: "maximized"
-  }, (window) => {
-    if (window) {
-      ytmWindowId = window.id ?? null;
+  }, async (window) => {
+    if (window?.id) {
+      await setStoredWindowId(window.id);
     }
   });
 };
@@ -36,11 +51,12 @@ chrome.action.onClicked.addListener(() => {
   openYTMWindow();
 });
 
-chrome.tabs.onCreated.addListener((tab) => {
+chrome.tabs.onCreated.addListener(async (tab) => {
   if (tab.pendingUrl?.includes("music.youtube.com") || tab.url?.includes("music.youtube.com")) {
     const url = tab.pendingUrl || tab.url;
+    const storedWindowId = await getStoredWindowId();
 
-    if (tab.windowId !== ytmWindowId && ytmWindowId !== null && url) {
+    if (storedWindowId !== null && tab.windowId !== storedWindowId && url) {
       if (tab.id) {
         chrome.tabs.remove(tab.id);
       }
@@ -49,17 +65,21 @@ chrome.tabs.onCreated.addListener((tab) => {
   }
 });
 
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (changeInfo.url?.includes("music.youtube.com")) {
-    if (tab.windowId !== ytmWindowId && ytmWindowId !== null) {
+    const storedWindowId = await getStoredWindowId();
+
+    if (storedWindowId !== null && tab.windowId !== storedWindowId) {
       chrome.tabs.remove(tabId);
       openYTMWindow(changeInfo.url);
     }
   }
 });
 
-chrome.windows.onRemoved.addListener((windowId) => {
-  if (windowId === ytmWindowId) {
-    ytmWindowId = null;
+chrome.windows.onRemoved.addListener(async (windowId) => {
+  const storedWindowId = await getStoredWindowId();
+
+  if (windowId === storedWindowId) {
+    await setStoredWindowId(null);
   }
 });
