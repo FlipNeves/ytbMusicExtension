@@ -76,66 +76,102 @@ function extractNextTrackFromPlayer() {
 
         const queuePanel = document.querySelector('ytmusic-player-queue');
         if (queuePanel) {
-            const items = Array.from(queuePanel.querySelectorAll('ytmusic-player-queue-item'));
+            const contentsContainer = queuePanel.querySelector('#contents');
+            const automixContainer = queuePanel.querySelector('#automix-contents');
 
-            if (items.length > 0) {
+            const contentsItems = contentsContainer ? Array.from(contentsContainer.querySelectorAll('ytmusic-player-queue-item')) : [];
+            const automixItems = automixContainer ? Array.from(automixContainer.querySelectorAll('ytmusic-player-queue-item')) : [];
+
+            const allItems = [...contentsItems, ...automixItems];
+
+            if (allItems.length > 0) {
                 let currentIndex = -1;
+                let isInContents = false;
+                let isInAutomix = false;
+                let localIndex = -1;
 
-                for (let i = 0; i < items.length; i++) {
-                    const item = items[i];
-                    const trackData = extractTrackFromQueueItem(item);
-
-                    if (trackData) {
-                        const titleMatch = trackData.nextTitle === nowPlayingTitle;
-                        const artistMatch = trackData.nextArtist === nowPlayingArtist;
-
-                        if (titleMatch && artistMatch) {
-                            currentIndex = i;
-                            break;
+                function findActiveInContainer(items) {
+                    for (let i = items.length - 1; i >= 0; i--) {
+                        const item = items[i];
+                        const isSelected = item.hasAttribute('selected');
+                        if (isSelected) {
+                            const trackData = extractTrackFromQueueItem(item);
+                            if (trackData && trackData.nextTitle === nowPlayingTitle) {
+                                return i;
+                            }
                         }
                     }
-                }
-
-                if (currentIndex === -1) {
-                    for (let i = 0; i < items.length; i++) {
+                    for (let i = items.length - 1; i >= 0; i--) {
+                        const item = items[i];
+                        const playState = item.getAttribute('play-button-state');
+                        if (playState === 'playing' || playState === 'loading') {
+                            return i;
+                        }
+                    }
+                    for (let i = items.length - 1; i >= 0; i--) {
                         const item = items[i];
                         const trackData = extractTrackFromQueueItem(item);
-
                         if (trackData && trackData.nextTitle === nowPlayingTitle) {
-                            currentIndex = i;
-                            break;
+                            return i;
                         }
+                    }
+                    return -1;
+                }
+
+                localIndex = findActiveInContainer(contentsItems);
+                if (localIndex !== -1) {
+                    isInContents = true;
+                    currentIndex = localIndex;
+                } else {
+                    localIndex = findActiveInContainer(automixItems);
+                    if (localIndex !== -1) {
+                        isInAutomix = true;
+                        currentIndex = contentsItems.length + localIndex;
                     }
                 }
 
                 if (currentIndex === -1) {
                     currentIndex = 0;
+                    isInContents = contentsItems.length > 0;
                 }
 
-                function isVideoOrClip(title) {
-                    if (!title) return false;
-                    const lowerTitle = title.toLowerCase();
-                    return lowerTitle.includes('clipe oficial') ||
-                        lowerTitle.includes('official video') ||
-                        lowerTitle.includes('music video') ||
-                        lowerTitle.includes('(clipe') ||
-                        lowerTitle.includes('(official') ||
-                        lowerTitle.includes('(video') ||
-                        lowerTitle.includes('[video') ||
-                        lowerTitle.includes('[clipe');
+                function isVideoContent(item) {
+                    try {
+                        const data = item.data || item.__data || {};
+                        const watchEndpoint = data.navigationEndpoint?.watchEndpoint;
+                        const musicConfig = watchEndpoint?.watchEndpointMusicSupportedConfigs?.watchEndpointMusicConfig;
+                        const musicVideoType = musicConfig?.musicVideoType;
+
+                        if (musicVideoType) {
+                            return musicVideoType !== 'MUSIC_VIDEO_TYPE_ATV';
+                        }
+
+                        return false;
+                    } catch (e) {
+                        return false;
+                    }
                 }
 
-                let nextIndex = currentIndex + 1;
                 let nextData = null;
+                let searchItems = [];
+                let startIndex = 0;
 
-                for (let i = nextIndex; i < Math.min(nextIndex + 5, items.length); i++) {
-                    items[i].scrollIntoView({ behavior: 'instant', block: 'nearest' });
+                if (isInContents) {
+                    if (localIndex + 1 < contentsItems.length) {
+                        searchItems = contentsItems;
+                        startIndex = localIndex + 1;
+                    } else {
+                        searchItems = automixItems;
+                        startIndex = 0;
+                    }
+                } else if (isInAutomix) {
+                    searchItems = automixItems;
+                    startIndex = localIndex + 1;
                 }
 
-                while (nextIndex < items.length) {
-                    const candidateItem = items[nextIndex];
-                    const shouldDebug = (nextIndex - currentIndex) <= 3;
-                    const candidateData = extractTrackFromQueueItem(candidateItem, shouldDebug);
+                for (let i = startIndex; i < searchItems.length; i++) {
+                    const candidateItem = searchItems[i];
+                    const candidateData = extractTrackFromQueueItem(candidateItem);
 
                     if (candidateData) {
                         const normalizeArtist = (artist) => {
@@ -156,7 +192,8 @@ function extractNextTrackFromPlayer() {
                         const isSameArtist = candidateNormalized === currentNormalized;
                         const isDuplicate = isSameTitle && isSameArtist;
 
-                        if (isDuplicate || isVideoOrClip(candidateData.nextTitle)) {
+                        if (isDuplicate || isVideoContent(candidateItem)) {
+                            continue;
                         } else {
                             nextData = candidateData;
 
@@ -167,7 +204,45 @@ function extractNextTrackFromPlayer() {
                             break;
                         }
                     }
-                    nextIndex++;
+                }
+
+                if (!nextData && isInContents && automixItems.length > 0) {
+                    for (let i = 0; i < automixItems.length; i++) {
+                        const candidateItem = automixItems[i];
+                        const candidateData = extractTrackFromQueueItem(candidateItem);
+
+                        if (candidateData) {
+                            const normalizeArtist = (artist) => {
+                                return artist.toLowerCase()
+                                    .replace(/\s+e\s+/g, '|')
+                                    .replace(/,\s*/g, '|')
+                                    .split('|')
+                                    .map(a => a.trim())
+                                    .filter(a => a)
+                                    .sort()
+                                    .join('|');
+                            };
+
+                            const currentNormalized = normalizeArtist(nowPlayingArtist);
+                            const candidateNormalized = normalizeArtist(candidateData.nextArtist);
+
+                            const isSameTitle = candidateData.nextTitle.toLowerCase() === nowPlayingTitle.toLowerCase();
+                            const isSameArtist = candidateNormalized === currentNormalized;
+                            const isDuplicate = isSameTitle && isSameArtist;
+
+                            if (isDuplicate || isVideoContent(candidateItem)) {
+                                continue;
+                            } else {
+                                nextData = candidateData;
+
+                                if (nextData.nextArt && nextData.nextArt.startsWith('data:image/')) {
+                                    nextData.nextArt = '';
+                                }
+
+                                break;
+                            }
+                        }
+                    }
                 }
 
                 if (nextData) {
@@ -191,15 +266,12 @@ function extractNextTrackFromPlayer() {
 
 function extractTrackFromQueueItem(item, debug = false) {
     try {
-        const title = item.querySelector('.song-title, .title');
-        const artist = item.querySelector('.byline, .secondary-flex-columns');
+        const title = item.querySelector('.song-title, .title, yt-formatted-string.title');
+        const artist = item.querySelector('.byline, .secondary-flex-columns, yt-formatted-string.byline');
 
-        const badges = item.querySelectorAll('[class*="badge"], [class*="icon"], [class*="overlay"]');
-        const hasPlayButton = badges.length >= 10;
-
-        if (title && hasPlayButton) {
+        if (title && title.textContent?.trim()) {
             return {
-                nextTitle: title.textContent?.trim() || '',
+                nextTitle: title.textContent.trim(),
                 nextArtist: artist?.textContent?.split('•')[0]?.trim() || '',
             };
         }
