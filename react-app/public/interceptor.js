@@ -290,24 +290,28 @@ function observePlayerChanges() {
 
     extractNextTrackFromPlayer();
 
-    const observer = new MutationObserver(() => {
-        extractNextTrackFromPlayer();
-    });
+    let mutationTimeout = null;
+    const debouncedExtract = () => {
+        if (mutationTimeout) return;
+        mutationTimeout = setTimeout(() => {
+            mutationTimeout = null;
+            extractNextTrackFromPlayer();
+        }, 300);
+    };
+
+    const observer = new MutationObserver(debouncedExtract);
 
     observer.observe(playerBar, {
         subtree: true,
         attributes: true,
+        attributeFilter: ['selected', 'play-button-state'],
         childList: true
     });
 
     const video = document.querySelector('video');
     if (video) {
-        video.addEventListener('play', () => {
-            setTimeout(extractNextTrackFromPlayer, 500);
-        });
-        video.addEventListener('loadeddata', () => {
-            setTimeout(extractNextTrackFromPlayer, 500);
-        });
+        video.addEventListener('play', debouncedExtract);
+        video.addEventListener('loadeddata', debouncedExtract);
     }
 }
 

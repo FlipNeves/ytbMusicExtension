@@ -7,6 +7,10 @@ export const useVisualizer = (visualizerRef: React.RefObject<HTMLDivElement | nu
     const animationIdRef = useRef<number | null>(null);
 
     useEffect(() => {
+        let lastFrameTime = 0;
+        const targetFPS = 30;
+        const frameInterval = 1000 / targetFPS;
+
         const initAudioContext = () => {
             const video = document.querySelector('video');
             if (!video) return false;
@@ -28,7 +32,18 @@ export const useVisualizer = (visualizerRef: React.RefObject<HTMLDivElement | nu
             return true;
         };
 
-        const draw = () => {
+        const draw = (timestamp: number) => {
+            if (timestamp - lastFrameTime < frameInterval) {
+                animationIdRef.current = requestAnimationFrame(draw);
+                return;
+            }
+            lastFrameTime = timestamp;
+
+            if (document.hidden) {
+                animationIdRef.current = requestAnimationFrame(draw);
+                return;
+            }
+
             if (analyserRef.current && visualizerRef.current) {
                 const dataArray = new Uint8Array(analyserRef.current.frequencyBinCount);
                 analyserRef.current.getByteFrequencyData(dataArray);

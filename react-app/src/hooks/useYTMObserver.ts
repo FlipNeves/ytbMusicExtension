@@ -2,6 +2,9 @@ import { useState, useEffect, useCallback, useRef } from "react";
 
 
 
+let colorCanvas: HTMLCanvasElement | null = null;
+let colorCtx: CanvasRenderingContext2D | null = null;
+
 const extractColor = (
   imgSrc: string
 ): Promise<{ r: number; g: number; b: number }> => {
@@ -11,13 +14,15 @@ const extractColor = (
     img.src = imgSrc;
     img.onload = () => {
       try {
-        const canvas = document.createElement("canvas");
-        canvas.width = 1;
-        canvas.height = 1;
-        const ctx = canvas.getContext("2d", { willReadFrequently: true });
-        if (!ctx) throw new Error("Could not get canvas context");
-        ctx.drawImage(img, 0, 0, 1, 1);
-        const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+        if (!colorCanvas) {
+          colorCanvas = document.createElement("canvas");
+          colorCanvas.width = 1;
+          colorCanvas.height = 1;
+          colorCtx = colorCanvas.getContext("2d", { willReadFrequently: true });
+        }
+        if (!colorCtx) throw new Error("Could not get canvas context");
+        colorCtx.drawImage(img, 0, 0, 1, 1);
+        const [r, g, b] = colorCtx.getImageData(0, 0, 1, 1).data;
         resolve({ r, g, b });
       } catch {
         resolve({ r: 255, g: 0, b: 0 });
@@ -280,13 +285,34 @@ export const useYTMObserver = () => {
     const playerBar = document.querySelector('ytmusic-player-bar');
     if (!playerBar) return;
 
-    const observer = new MutationObserver(() => {
-      setTimeout(() => syncPlayerState(), 50);
+    let mutationTimeout: ReturnType<typeof setTimeout> | null = null;
+    const debouncedSync = () => {
+      if (mutationTimeout) return;
+      mutationTimeout = setTimeout(() => {
+        mutationTimeout = null;
+        syncPlayerState();
+      }, 250);
+    };
+
+    const observer = new MutationObserver(debouncedSync);
+    observer.observe(playerBar, {
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['aria-valuenow', 'aria-pressed', 'src'],
+      childList: true
     });
-    observer.observe(playerBar, { subtree: true, attributes: true, childList: true });
 
     const handleEnded = () => {
       songChangePendingRef.current = true;
+    };
+
+    let lastTimeUpdate = 0;
+    const throttledTimeUpdate = () => {
+      const now = Date.now();
+      if (now - lastTimeUpdate >= 250) {
+        lastTimeUpdate = now;
+        updateTime();
+      }
     };
 
     const bindVideo = () => {
@@ -295,22 +321,23 @@ export const useYTMObserver = () => {
         video.dataset.focusModeBound = 'true';
         video.addEventListener('play', syncPlayerState);
         video.addEventListener('pause', syncPlayerState);
-        video.addEventListener('timeupdate', updateTime);
+        video.addEventListener('timeupdate', throttledTimeUpdate);
         video.addEventListener('loadeddata', syncPlayerState);
         video.addEventListener('ended', handleEnded);
       }
     }
 
-    const videoInterval = setInterval(bindVideo, 1000);
+    const videoInterval = setInterval(bindVideo, 3000);
 
     return () => {
       observer.disconnect();
+      if (mutationTimeout) clearTimeout(mutationTimeout);
       clearInterval(videoInterval);
       const video = document.querySelector('video');
       if (video) {
         video.removeEventListener('play', syncPlayerState);
         video.removeEventListener('pause', syncPlayerState);
-        video.removeEventListener('timeupdate', updateTime);
+        video.removeEventListener('timeupdate', throttledTimeUpdate);
         video.removeEventListener('loadeddata', syncPlayerState);
         video.removeEventListener('ended', handleEnded);
       }
@@ -357,7 +384,7 @@ export const useYTMObserver = () => {
     };
 
     syncVolumeAndLike();
-    const interval = setInterval(syncVolumeAndLike, 500);
+    const interval = setInterval(syncVolumeAndLike, 2000);
     return () => clearInterval(interval);
   }, []);
 
