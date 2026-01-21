@@ -44,6 +44,8 @@ const Lyrics: React.FC<LyricsProps> = ({ title, artist, isVisible, currentTime =
     useEffect(() => {
         if (!isVisible || !title || !artist) return;
 
+        const abortController = new AbortController();
+
         const fetchLyrics = async () => {
             setLoading(true);
             setError(null);
@@ -55,14 +57,19 @@ const Lyrics: React.FC<LyricsProps> = ({ title, artist, isVisible, currentTime =
                 const cleanArtist = artist.split(',')[0].trim();
 
                 const response = await fetch(
-                    `https://lrclib.net/api/get?artist_name=${encodeURIComponent(cleanArtist)}&track_name=${encodeURIComponent(cleanTitle)}`
+                    `https://lrclib.net/api/get?artist_name=${encodeURIComponent(cleanArtist)}&track_name=${encodeURIComponent(cleanTitle)}`,
+                    { signal: abortController.signal }
                 );
+
+                if (abortController.signal.aborted) return;
 
                 if (!response.ok) {
                     throw new Error('Letra não encontrada');
                 }
 
                 const data = await response.json();
+
+                if (abortController.signal.aborted) return;
 
                 if (data.syncedLyrics) {
                     const parsed = parseLRC(data.syncedLyrics);
@@ -72,14 +79,21 @@ const Lyrics: React.FC<LyricsProps> = ({ title, artist, isVisible, currentTime =
                 } else {
                     throw new Error('Letra não disponível');
                 }
-            } catch {
+            } catch (err) {
+                if (err instanceof Error && err.name === 'AbortError') return;
                 setError('Letra não encontrada');
             } finally {
-                setLoading(false);
+                if (!abortController.signal.aborted) {
+                    setLoading(false);
+                }
             }
         };
 
         fetchLyrics();
+
+        return () => {
+            abortController.abort();
+        };
     }, [title, artist, isVisible]);
 
     useEffect(() => {
