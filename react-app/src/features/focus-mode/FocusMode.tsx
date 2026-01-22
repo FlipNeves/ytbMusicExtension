@@ -65,6 +65,7 @@ const FocusMode = () => {
                         artist={songInfo.artist}
                         isVisible={showLyrics}
                         currentTime={songInfo.currentTimeSec}
+                        duration={songInfo.duration}
                     />
 
                     <FocusPlayer

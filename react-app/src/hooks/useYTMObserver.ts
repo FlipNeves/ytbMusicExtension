@@ -48,6 +48,23 @@ const adjustColorBrightness = (colorObj: {
   return `rgb(${Math.floor(r)},${Math.floor(g)},${Math.floor(b)})`;
 };
 
+const timeToSeconds = (time: string): number => {
+  const parts = time.split(':').map(Number);
+  if (parts.some(isNaN)) return 0;
+
+  if (parts.length === 3) {
+    const [h, m, s] = parts;
+    return h * 3600 + m * 60 + s;
+  }
+
+  if (parts.length === 2) {
+    const [m, s] = parts;
+    return m * 60 + s;
+  }
+
+  return 0;
+};
+
 export const useYTMObserver = () => {
   const [songInfo, setSongInfo] = useState({
     albumArt: "",
@@ -70,6 +87,7 @@ export const useYTMObserver = () => {
   const lastAlbumArtRef = useRef("");
   const lastSongIdRef = useRef("");
   const songChangePendingRef = useRef(false);
+  const isTransitioningRef = useRef(false);
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -172,11 +190,16 @@ export const useYTMObserver = () => {
     const newArtist = artistEl?.textContent?.split('•')[0].trim() || 'Artista';
     const songId = `${newTitle}-${newArtist}`;
 
-    const songChanged = songId !== lastSongIdRef.current && lastSongIdRef.current !== '';
+    let songChanged = songId !== lastSongIdRef.current && lastSongIdRef.current !== '';
+
+    if (isTransitioningRef.current) {
+      songChanged = true;
+    }
 
     if (songChanged) {
       lastSongIdRef.current = songId;
       songChangePendingRef.current = false;
+      isTransitioningRef.current = false;
 
       setSongInfo({
         albumArt: '',
@@ -217,14 +240,15 @@ export const useYTMObserver = () => {
     let currentTimeStr = '0:00';
     let totalTimeStr = '0:00';
     let progress = 0;
+    let currentTimeSecValue = 0;
 
     if (timeInfoEl && !songChanged) {
       const timeText = timeInfoEl.textContent || '';
       const parts = timeText.split(' / ').map(s => s.trim());
       currentTimeStr = parts[0] || '0:00';
       totalTimeStr = parts[1] || '0:00';
+      currentTimeSecValue = timeToSeconds(currentTimeStr);
     }
-
     if (progressBarEl && !songChanged) {
       const value = parseFloat(progressBarEl.getAttribute('aria-valuenow') || '0');
       const max = parseFloat(progressBarEl.getAttribute('aria-valuemax') || '100');
@@ -239,6 +263,7 @@ export const useYTMObserver = () => {
       title: newTitle,
       artist: newArtist,
       currentTime: songChanged ? '0:00' : currentTimeStr,
+      currentTimeSec: songChanged ? 0 : currentTimeSecValue,
       totalTime: totalTimeStr,
       progress: songChanged ? 0 : progress,
     }));
@@ -247,6 +272,8 @@ export const useYTMObserver = () => {
   }, []);
 
   const updateTime = useCallback(() => {
+    if (isTransitioningRef.current) return;
+
     const timeInfoEl = document.querySelector('ytmusic-player-bar .time-info');
     const progressBarEl = document.querySelector('ytmusic-player-bar #progress-bar');
     const video = document.querySelector('video') as HTMLVideoElement;
@@ -257,18 +284,18 @@ export const useYTMObserver = () => {
 
       let progress = 0;
       let durationSec = 0;
+      let currentSec = 0;
+
       if (progressBarEl) {
-        const value = parseFloat(progressBarEl.getAttribute('aria-valuenow') || '0');
         const max = parseFloat(progressBarEl.getAttribute('aria-valuemax') || '100');
+        currentSec = parseFloat(progressBarEl.getAttribute('aria-valuenow') || '0')
         durationSec = max;
-        progress = max > 0 ? (value / max) * 100 : 0;
+        progress = max > 0 ? (currentSec / max) * 100 : 0;
       }
 
       if (video && video.duration && !isNaN(video.duration)) {
         durationSec = video.duration;
       }
-
-      const currentSec = video && !isNaN(video.currentTime) ? video.currentTime : 0;
 
       setSongInfo(info => ({
         ...info,
@@ -304,6 +331,7 @@ export const useYTMObserver = () => {
 
     const handleEnded = () => {
       songChangePendingRef.current = true;
+      isTransitioningRef.current = true;
     };
 
     let lastTimeUpdate = 0;
