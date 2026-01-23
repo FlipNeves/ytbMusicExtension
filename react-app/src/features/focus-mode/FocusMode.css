@@ -117,31 +117,49 @@ ytmusic-play-button-renderer,
     will-change: transform;
 }
 
-.focus-close-btn {
-    position: absolute;
-    top: 30px;
-    right: 30px;
-    background: rgba(255, 255, 255, 0.1);
-    border: none;
+.focus-close-btn,
+.focus-action-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 50%;
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
     cursor: pointer;
     display: flex;
     justify-content: center;
     align-items: center;
+    color: rgba(255, 255, 255, 0.8);
+    transition: all 0.2s ease;
+    backdrop-filter: blur(10px);
+}
+
+.focus-close-btn {
+    position: absolute;
+    top: 30px;
+    right: 30px;
+}
+
+.focus-close-btn:hover,
+.focus-action-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.2);
     color: #fff;
-    transition: background 0.2s;
+    transform: scale(1.05);
 }
 
-.focus-close-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
-}
-
-.focus-close-btn svg {
-    width: 20px;
-    height: 20px;
+.focus-close-btn svg,
+.focus-action-btn svg {
+    width: 22px;
+    height: 22px;
     fill: currentColor;
+}
+
+.focus-action-btn.active {
+    background: rgba(255, 107, 157, 0.15);
+    border-color: rgba(255, 107, 157, 0.4);
+    color: #ff6b9d;
 }
 
 .focus-player {
@@ -256,37 +274,6 @@ ytmusic-play-button-renderer,
     max-width: 100%;
 }
 
-.focus-action-btn {
-    width: 48px;
-    min-width: 48px;
-    height: 48px;
-    min-height: 48px;
-    border-radius: 50%;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    background: transparent;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: rgba(255, 255, 255, 0.6);
-    transition: all 0.2s ease;
-    flex-shrink: 0;
-}
-
-.focus-action-btn svg {
-    width: 22px;
-    height: 22px;
-}
-
-.focus-action-btn:hover {
-    border-color: rgba(255, 255, 255, 0.8);
-    color: rgba(255, 255, 255, 1);
-}
-
-.focus-action-btn.active {
-    border-color: #ff6b9d;
-    color: #ff6b9d;
-}
 
 .focus-copied-toast {
     position: absolute;
@@ -614,10 +601,10 @@ ytmusic-mealbar-promo-renderer {
     align-items: center;
     gap: 8px;
     padding: 10px 10px;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 189, 174, 0.1);
+    border: 1px solid rgba(0, 189, 174, 0.2);
     border-radius: 50%;
-    color: rgba(255, 255, 255, 0.6);
+    color: #00bdae;
     font-size: 0.85rem;
     font-family: var(--ytm-focus-font-family);
     cursor: pointer;
@@ -785,13 +772,20 @@ ytmusic-mealbar-promo-renderer {
     opacity: 1;
 }
 
+.focus-lyrics-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-shrink: 0;
+}
+
 .focus-lyrics h3 {
     color: var(--ytm-focus-secondary);
     text-transform: uppercase;
     font-size: 1.5rem;
     letter-spacing: 1px;
-    margin: 0 0 20px 0;
-    flex-shrink: 0;
+    margin: 0;
 }
 
 .focus-lyrics-content {
@@ -830,7 +824,13 @@ ytmusic-mealbar-promo-renderer {
     font-size: 1.5rem;
     line-height: 1.5;
     font-family: var(--ytm-focus-font-family);
-    transition: color 0.3s ease, font-weight 0.3s ease;
+    transition: color 0.3s ease, font-weight 0.3s ease, opacity 0.2s ease;
+    cursor: pointer;
+}
+
+.lyric-line:hover {
+    opacity: 1;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
 }
 
 .lyric-line.past {
@@ -850,18 +850,47 @@ ytmusic-mealbar-promo-renderer {
     padding: 20px 0;
 }
 
-.focus-btn.lyrics-toggle {
-    opacity: 0.6;
-    transition: all 0.2s ease;
-}
-
-.focus-btn.lyrics-toggle:hover {
-    opacity: 1;
-}
-
 .focus-btn.lyrics-toggle.active {
     opacity: 1;
     color: var(--ytm-focus-primary);
+}
+
+.focus-pill-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    opacity: 1;
+    transition: all 0.2s ease;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 8px 16px;
+    border-radius: 24px;
+    font-size: 0.85rem;
+    width: auto;
+    height: auto;
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+}
+
+.focus-pill-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    transform: scale(1.02);
+}
+
+.focus-pill-btn.active {
+    opacity: 1;
+    color: var(--ytm-focus-primary);
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.focus-pill-btn svg {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
 }
 
 @media (max-width: 768px) {

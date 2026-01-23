@@ -8,7 +8,7 @@ import { fetchLyrics, isLyricsInCache } from '../../services';
  * Refactored to use LyricsService for data fetching and caching.
  * Component now focuses on presentation logic only.
  */
-const Lyrics: React.FC<LyricsProps> = ({ title, artist, isVisible, currentTime = 0, duration }) => {
+const Lyrics: React.FC<LyricsProps> = ({ title, artist, isVisible, currentTime = 0, duration, onLineClick }) => {
     const [syncedLyrics, setSyncedLyrics] = useState<LyricLine[]>([]);
     const [plainLyrics, setPlainLyrics] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
@@ -69,15 +69,43 @@ const Lyrics: React.FC<LyricsProps> = ({ title, artist, isVisible, currentTime =
         };
     }, [title, artist, isVisible, duration]);
 
+    const [autoScroll, setAutoScroll] = useState(true);
+    const isProgrammaticScroll = useRef(false);
+
     // Auto-scroll to active lyric line
     useEffect(() => {
-        if (activeLineRef.current && containerRef.current) {
+        if (autoScroll && activeLineRef.current && containerRef.current) {
+            isProgrammaticScroll.current = true;
             activeLineRef.current.scrollIntoView({
                 behavior: 'smooth',
                 block: 'center',
             });
+            setTimeout(() => {
+                isProgrammaticScroll.current = false;
+            }, 500);
         }
-    }, [currentTime]);
+    }, [currentTime, autoScroll]);
+
+    const handleScroll = () => {
+        if (isProgrammaticScroll.current) return;
+        if (!activeLineRef.current || !containerRef.current) return;
+
+        const container = containerRef.current;
+        const activeLine = activeLineRef.current;
+
+        const containerCenter = container.scrollTop + container.clientHeight / 2;
+        const activeLineCenter = activeLine.offsetTop + activeLine.clientHeight / 2;
+        const distance = Math.abs(containerCenter - activeLineCenter);
+
+        const RE_ENABLE_THRESHOLD = 100; 
+        const DISABLE_THRESHOLD = 110; 
+
+        if (distance < RE_ENABLE_THRESHOLD && !autoScroll) {
+            setAutoScroll(true);
+        } else if (distance > DISABLE_THRESHOLD && autoScroll) {
+            setAutoScroll(false);
+        }
+    };
 
     /**
      * Find the active lyric line based on current time
@@ -95,8 +123,25 @@ const Lyrics: React.FC<LyricsProps> = ({ title, artist, isVisible, currentTime =
 
     return (
         <div className={`focus-lyrics ${isVisible ? 'visible' : ''}`}>
-            <h3>Letra</h3>
-            <div className="focus-lyrics-content" ref={containerRef}>
+            <div className="focus-lyrics-header">
+                <h3>Letra</h3>
+                <button
+                    className={`focus-pill-btn ${autoScroll ? 'active' : ''}`}
+                    onClick={() => setAutoScroll(!autoScroll)}
+                    title={autoScroll ? "Desativar rolagem automática" : "Ativar rolagem automática"}
+                >
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z" transform={autoScroll ? "rotate(180 12 12)" : ""} />
+                    </svg>
+                    <span>{autoScroll ? "Sync On" : "Sync Off"}</span>
+                </button>
+            </div>
+
+            <div
+                className="focus-lyrics-content"
+                ref={containerRef}
+                onScroll={handleScroll}
+            >
                 {loading && <p className="lyrics-loading">Buscando letra...</p>}
                 {error && <p className="lyrics-error">{error}</p>}
 
@@ -107,6 +152,8 @@ const Lyrics: React.FC<LyricsProps> = ({ title, artist, isVisible, currentTime =
                                 key={index}
                                 ref={index === activeIndex ? activeLineRef : null}
                                 className={`lyric-line ${index === activeIndex ? 'active' : ''} ${index < activeIndex ? 'past' : ''}`}
+                                onClick={() => onLineClick?.(line.time)}
+                                title="Ir para este trecho"
                             >
                                 {line.text}
                             </div>

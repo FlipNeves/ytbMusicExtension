@@ -46,4 +46,5 @@ export interface LyricsProps {
     currentTime?: number;
     /** Song duration in seconds */
     duration?: number;
+    onLineClick?: (time: number) => void;
 }

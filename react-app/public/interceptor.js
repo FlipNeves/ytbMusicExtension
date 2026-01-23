@@ -284,8 +284,26 @@ window.addEventListener('message', (event) => {
     // Seek control
     if (event.data?.type === 'YTM_SEEK') {
         const time = event.data.time;
+        if (typeof time !== 'number') return;
+
+        console.log("[Interceptor] Seeking to:", time);
+
+        const playerBar = document.querySelector('ytmusic-player-bar');
+        if (playerBar && playerBar.playerApi && typeof playerBar.playerApi.seekTo === 'function') {
+            console.log("[Interceptor] Using playerBar.playerApi.seekTo");
+            playerBar.playerApi.seekTo(time);
+            return;
+        }
+
+        const moviePlayer = document.getElementById('movie_player');
+        if (moviePlayer && typeof moviePlayer.seekTo === 'function') {
+            console.log("[Interceptor] Using movie_player.seekTo");
+            moviePlayer.seekTo(time);
+            return;
+        }
+
         const video = document.querySelector('video');
-        if (video && typeof time === 'number') {
+        if (video) {
             video.currentTime = time;
         }
     }

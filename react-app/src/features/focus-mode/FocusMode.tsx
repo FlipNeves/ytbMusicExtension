@@ -47,6 +47,10 @@ const FocusMode = () => {
         setShowLyrics(prev => !prev);
     };
 
+    const handleLyricClick = (targetSeconds: number) => {
+        seekTo(targetSeconds);
+    };
+
     return (
         <>
             <FocusButton onClick={toggle} />
@@ -66,6 +70,7 @@ const FocusMode = () => {
                         isVisible={showLyrics}
                         currentTime={songInfo.currentTimeSec}
                         duration={songInfo.duration}
+                        onLineClick={handleLyricClick}
                     />
 
                     <FocusPlayer
