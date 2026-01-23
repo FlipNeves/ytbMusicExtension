@@ -5,6 +5,7 @@ export const useVisualizer = (visualizerRef: React.RefObject<HTMLDivElement | nu
     const analyserRef = useRef<AnalyserNode | null>(null);
     const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
     const animationIdRef = useRef<number | null>(null);
+    const audioInitFailedRef = useRef<boolean>(false);
 
     useEffect(() => {
         let lastFrameTime = 0;
@@ -12,12 +13,13 @@ export const useVisualizer = (visualizerRef: React.RefObject<HTMLDivElement | nu
         const frameInterval = 1000 / targetFPS;
 
         const initAudioContext = () => {
+            if (audioInitFailedRef.current) return false;
+
             const video = document.querySelector('video');
             if (!video) return false;
 
             if (!audioCtxRef.current) {
                 try {
-                    video.crossOrigin = "anonymous";
                     const AudioContext = window.AudioContext || (window as unknown as { webkitAudioContext: typeof window.AudioContext }).webkitAudioContext;
                     audioCtxRef.current = new AudioContext();
                     analyserRef.current = audioCtxRef.current.createAnalyser();
@@ -26,10 +28,33 @@ export const useVisualizer = (visualizerRef: React.RefObject<HTMLDivElement | nu
                     sourceRef.current.connect(analyserRef.current);
                     analyserRef.current.connect(audioCtxRef.current.destination);
                 } catch {
+                    audioInitFailedRef.current = true;
                     return false;
                 }
             }
             return true;
+        };
+
+        // Fallback animation when audio context fails
+        const drawFallback = (timestamp: number) => {
+            if (timestamp - lastFrameTime < frameInterval) {
+                animationIdRef.current = requestAnimationFrame(drawFallback);
+                return;
+            }
+            lastFrameTime = timestamp;
+
+            if (document.hidden || !visualizerRef.current) {
+                animationIdRef.current = requestAnimationFrame(drawFallback);
+                return;
+            }
+
+            const bars = visualizerRef.current.querySelectorAll<HTMLDivElement>('.bar');
+            bars.forEach((bar) => {
+                const scale = 0.2 + Math.random() * 0.8;
+                bar.style.transform = `scaleY(${scale})`;
+            });
+
+            animationIdRef.current = requestAnimationFrame(drawFallback);
         };
 
         const draw = (timestamp: number) => {
@@ -62,18 +87,32 @@ export const useVisualizer = (visualizerRef: React.RefObject<HTMLDivElement | nu
         };
 
         if (isEnabled) {
-            if (initAudioContext()) {
+            const audioInitialized = initAudioContext();
+
+            if (audioInitialized) {
                 if (audioCtxRef.current?.state === 'suspended') {
                     audioCtxRef.current.resume();
                 }
                 if (animationIdRef.current === null) {
                     animationIdRef.current = requestAnimationFrame(draw);
                 }
+            } else {
+                // Use fallback animation
+                if (animationIdRef.current === null) {
+                    animationIdRef.current = requestAnimationFrame(drawFallback);
+                }
             }
         } else {
             if (animationIdRef.current) {
                 cancelAnimationFrame(animationIdRef.current);
                 animationIdRef.current = null;
+            }
+            // Reset bars when not playing
+            if (visualizerRef.current) {
+                const bars = visualizerRef.current.querySelectorAll<HTMLDivElement>('.bar');
+                bars.forEach((bar) => {
+                    bar.style.transform = 'scaleY(0.1)';
+                });
             }
         }
 

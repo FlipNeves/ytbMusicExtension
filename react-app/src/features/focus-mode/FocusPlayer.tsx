@@ -1,11 +1,12 @@
-import type { RefObject } from "react";
-import Controls from "./Controls";
-import Player from "./Player";
-import Visualizer from "./Visualizer";
+import type { RefObject } from 'react';
+import type { SongInfo } from '../../types';
+import Controls from './Controls';
+import Player from './Player';
+import Visualizer from './Visualizer';
 
 interface FocusPlayerProps {
-    visualizerRef: RefObject<any>;
-    songInfo: Record<string, any>;
+    visualizerRef: RefObject<HTMLDivElement | null>;
+    songInfo: SongInfo;
     isPlaying: boolean;
     volume: number;
     isLiked: boolean;
@@ -16,6 +17,11 @@ interface FocusPlayerProps {
     onToggleLyrics: () => void;
 }
 
+/**
+ * FocusPlayer - Main player UI in focus mode
+ * 
+ * Refactored to use proper TypeScript types instead of `any`
+ */
 const FocusPlayer = ({
     visualizerRef,
     songInfo,
@@ -44,19 +50,19 @@ const FocusPlayer = ({
                 onLike={onLike}
                 onSeek={onSeek}
                 onPlayPause={() =>
-                    document.querySelector<HTMLElement>("#play-pause-button")?.click()
+                    document.querySelector<HTMLElement>('#play-pause-button')?.click()
                 }
             />
             <Controls
                 isPlaying={isPlaying}
                 onPlayPause={() =>
-                    document.querySelector<HTMLElement>("#play-pause-button")?.click()
+                    document.querySelector<HTMLElement>('#play-pause-button')?.click()
                 }
                 onNext={() =>
-                    document.querySelector<HTMLElement>(".next-button")?.click()
+                    document.querySelector<HTMLElement>('.next-button')?.click()
                 }
                 onPrev={() =>
-                    document.querySelector<HTMLElement>(".previous-button")?.click()
+                    document.querySelector<HTMLElement>('.previous-button')?.click()
                 }
                 volume={volume}
                 onVolumeChange={onVolumeChange}
@@ -68,5 +74,3 @@ const FocusPlayer = ({
 };
 
 export default FocusPlayer;
-
-
