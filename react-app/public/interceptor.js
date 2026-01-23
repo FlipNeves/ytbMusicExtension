@@ -286,18 +286,14 @@ window.addEventListener('message', (event) => {
         const time = event.data.time;
         if (typeof time !== 'number') return;
 
-        console.log("[Interceptor] Seeking to:", time);
-
         const playerBar = document.querySelector('ytmusic-player-bar');
         if (playerBar && playerBar.playerApi && typeof playerBar.playerApi.seekTo === 'function') {
-            console.log("[Interceptor] Using playerBar.playerApi.seekTo");
             playerBar.playerApi.seekTo(time);
             return;
         }
 
         const moviePlayer = document.getElementById('movie_player');
         if (moviePlayer && typeof moviePlayer.seekTo === 'function') {
-            console.log("[Interceptor] Using movie_player.seekTo");
             moviePlayer.seekTo(time);
             return;
         }
