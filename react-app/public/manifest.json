@@ -1,8 +1,8 @@
 {
     "manifest_version": 3,
-    "name": "YTM Player",
+    "name": "Focus Music Player",
     "version": "1.0.0",
-    "description": "Experiência imersiva para YouTube Music com modo foco",
+    "description": "Focus Music Player: Experiência imersiva para YouTube Music com modo foco",
     "icons": {
         "16": "icon48.png",
         "48": "icon48.png",
