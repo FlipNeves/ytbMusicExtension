@@ -32,9 +32,10 @@ export const usePlayerControls = (): PlayerControls & {
     const [isLiked, setIsLiked] = useState(false);
     const [isPlaying, setIsPlaying] = useState(false);
 
-    // Sync volume and like status periodically
+    // Event-driven state synchronization (replaces 2s polling for instant updates)
     useEffect(() => {
-        const syncState = () => {
+        // Initial state sync
+        const syncInitialState = () => {
             // Sync volume
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const volumeSlider = document.querySelector(SELECTORS.VOLUME_SLIDER) as any;
@@ -60,12 +61,70 @@ export const usePlayerControls = (): PlayerControls & {
             }
         };
 
-        syncState();
-        const interval = setInterval(syncState, 2000);
-        return () => clearInterval(interval);
+        syncInitialState();
+
+        // Video event handlers for instant play/pause updates
+        const handlePlay = () => setIsPlaying(true);
+        const handlePause = () => setIsPlaying(false);
+        const handleVolumeChange = (e: Event) => {
+            const video = e.target as HTMLVideoElement;
+            setVolumeState(Math.round(Math.sqrt(video.volume) * 100));
+        };
+
+        // Bind to video element
+        const bindVideoEvents = () => {
+            const video = document.querySelector(SELECTORS.VIDEO) as HTMLVideoElement;
+            if (video && !video.dataset.playerControlsBound) {
+                video.dataset.playerControlsBound = 'true';
+                video.addEventListener('play', handlePlay);
+                video.addEventListener('pause', handlePause);
+                video.addEventListener('volumechange', handleVolumeChange);
+                // Sync initial state from this video
+                setIsPlaying(!video.paused);
+            }
+        };
+
+        bindVideoEvents();
+
+        // MutationObserver for like button changes
+        const likeBtn = document.querySelector(SELECTORS.LIKE_BUTTON);
+        let likeObserver: MutationObserver | null = null;
+        if (likeBtn) {
+            likeObserver = new MutationObserver(() => {
+                const isNowLiked = likeBtn.getAttribute('aria-pressed') === 'true';
+                setIsLiked(isNowLiked);
+            });
+            likeObserver.observe(likeBtn, {
+                attributes: true,
+                attributeFilter: ['aria-pressed']
+            });
+        }
+
+        // Retry binding if video not found initially
+        const retryInterval = setInterval(() => {
+            const video = document.querySelector(SELECTORS.VIDEO) as HTMLVideoElement;
+            if (video && !video.dataset.playerControlsBound) {
+                bindVideoEvents();
+            }
+        }, 1000);
+
+        return () => {
+            clearInterval(retryInterval);
+            likeObserver?.disconnect();
+
+            const video = document.querySelector(SELECTORS.VIDEO) as HTMLVideoElement;
+            if (video) {
+                video.removeEventListener('play', handlePlay);
+                video.removeEventListener('pause', handlePause);
+                video.removeEventListener('volumechange', handleVolumeChange);
+                delete video.dataset.playerControlsBound;
+            }
+        };
     }, []);
 
     const playPause = useCallback(() => {
+        // Optimistic update for instant UI feedback
+        setIsPlaying(prev => !prev);
         document.querySelector<HTMLElement>(SELECTORS.PLAY_PAUSE)?.click();
     }, []);
 

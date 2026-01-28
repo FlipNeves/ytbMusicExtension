@@ -1,0 +1,68 @@
+/* ===========================================
+   Up Next Section Styles
+   =========================================== */
+
+.focus-next {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    width: 200px;
+    min-width: 200px;
+    max-width: 200px;
+    height: 100px;
+    min-height: 100px;
+    max-height: 100px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 30px;
+    border-radius: 16px;
+    backdrop-filter: blur(10px);
+    animation: fadeIn 1s ease-out 0.3s backwards;
+    overflow: hidden;
+    transition: transform 0.4s ease;
+}
+
+.focus-next h3 {
+    color: var(--ytm-focus-secondary);
+    text-transform: uppercase;
+    font-size: 1rem;
+    letter-spacing: 1px;
+    margin-bottom: 20px;
+}
+
+.next-track-card {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.next-art {
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+    background: #333;
+    object-fit: cover;
+}
+
+.next-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
+}
+
+.next-title {
+    color: var(--ytm-focus-primary);
+    font-size: 1.4rem;
+    font-weight: 500;
+    margin-bottom: 4px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.next-artist {
+    color: var(--ytm-focus-secondary);
+    font-size: 1.2rem;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}

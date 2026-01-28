@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import './FocusMode.css';
+import './styles/index.css';
 import UpNext from './UpNext';
 import FocusButton from './FocusButton';
 import { useYTMObserver } from '../../hooks/useYTMObserver';
@@ -7,6 +7,7 @@ import { useVisualizer } from '../../hooks/useVisualizer';
 import FocusPlayer from './FocusPlayer';
 import PixDonation from './PixDonation';
 import Lyrics from './Lyrics';
+import { ErrorBoundary } from './ErrorBoundary';
 
 const FocusMode = () => {
     const [isActive, setIsActive] = useState(false);
@@ -55,41 +56,43 @@ const FocusMode = () => {
         <>
             <FocusButton onClick={toggle} />
             {isActive && (
-                <div id="focus-overlay" className={`visible ${isPlaying ? 'is-playing' : ''}`}>
-                    <button className="focus-close-btn" title="Sair do Modo Foco" onClick={toggle}>
-                        <svg viewBox="0 0 24 24">
-                            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
-                        </svg>
-                    </button>
+                <ErrorBoundary>
+                    <div id="focus-overlay" className={`visible ${isPlaying ? 'is-playing' : ''}`}>
+                        <button className="focus-close-btn" title="Sair do Modo Foco" aria-label="Fechar modo foco" onClick={toggle}>
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                            </svg>
+                        </button>
 
 
 
-                    <Lyrics
-                        title={songInfo.title}
-                        artist={songInfo.artist}
-                        isVisible={showLyrics}
-                        currentTime={songInfo.currentTimeSec}
-                        duration={songInfo.duration}
-                        onLineClick={handleLyricClick}
-                    />
+                        <Lyrics
+                            title={songInfo.title}
+                            artist={songInfo.artist}
+                            isVisible={showLyrics}
+                            currentTime={songInfo.currentTimeSec}
+                            duration={songInfo.duration}
+                            onLineClick={handleLyricClick}
+                        />
 
-                    <FocusPlayer
-                        visualizerRef={visualizerRef}
-                        songInfo={songInfo}
-                        isPlaying={isPlaying}
-                        volume={volume}
-                        isLiked={isLiked}
-                        onVolumeChange={setVolume}
-                        onLike={toggleLike}
-                        onSeek={seekTo}
-                        showLyrics={showLyrics}
-                        onToggleLyrics={toggleLyricsPanel}
-                    />
+                        <FocusPlayer
+                            visualizerRef={visualizerRef}
+                            songInfo={songInfo}
+                            isPlaying={isPlaying}
+                            volume={volume}
+                            isLiked={isLiked}
+                            onVolumeChange={setVolume}
+                            onLike={toggleLike}
+                            onSeek={seekTo}
+                            showLyrics={showLyrics}
+                            onToggleLyrics={toggleLyricsPanel}
+                        />
 
-                    <UpNext {...upNextInfo} />
+                        <UpNext {...upNextInfo} />
 
-                    <PixDonation />
-                </div>
+                        <PixDonation />
+                    </div>
+                </ErrorBoundary>
             )}
         </>
     );

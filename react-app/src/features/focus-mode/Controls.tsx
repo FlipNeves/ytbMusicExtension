@@ -26,23 +26,25 @@ const Controls: React.FC<ControlsProps> = ({
             {onToggleLyrics && (
                 <button
                     className={`focus-btn lyrics-toggle ${showLyrics ? 'active' : ''}`}
-                    title="Mostrar Letra"
+                    title={showLyrics ? 'Ocultar letra' : 'Mostrar letra'}
+                    aria-label={showLyrics ? 'Ocultar letra da música' : 'Mostrar letra da música'}
+                    aria-pressed={showLyrics}
                     onClick={onToggleLyrics}
                 >
-                    <svg viewBox="0 0 24 24" fill={showLyrics ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.5">
+                    <svg viewBox="0 0 24 24" fill={showLyrics ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
                         <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" fill={showLyrics ? "currentColor" : "none"} />
                     </svg>
                 </button>
             )}
-            <button className="focus-btn prev" title="Anterior" onClick={onPrev}>
-                <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"></path></svg>
+            <button className="focus-btn prev" title="Anterior" aria-label="Música anterior" onClick={onPrev}>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"></path></svg>
             </button>
-            <button className="focus-btn play-pause" title="Play/Pause" onClick={onPlayPause}>
-                <svg viewBox="0 0 24 24" className="icon-play" style={{ display: isPlaying ? 'none' : 'block' }}><path d="M8 5v14l11-7z"></path></svg>
-                <svg viewBox="0 0 24 24" className="icon-pause" style={{ display: isPlaying ? 'block' : 'none' }}><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path></svg>
+            <button className="focus-btn play-pause" title={isPlaying ? 'Pausar' : 'Reproduzir'} aria-label={isPlaying ? 'Pausar música' : 'Reproduzir música'} onClick={onPlayPause}>
+                <svg viewBox="0 0 24 24" className="icon-play" style={{ display: isPlaying ? 'none' : 'block' }} aria-hidden="true"><path d="M8 5v14l11-7z"></path></svg>
+                <svg viewBox="0 0 24 24" className="icon-pause" style={{ display: isPlaying ? 'block' : 'none' }} aria-hidden="true"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path></svg>
             </button>
-            <button className="focus-btn next" title="Próximo" onClick={onNext}>
-                <svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"></path></svg>
+            <button className="focus-btn next" title="Próxima" aria-label="Próxima música" onClick={onNext}>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"></path></svg>
             </button>
 
             <div className="focus-volume-container">
@@ -56,6 +58,10 @@ const Controls: React.FC<ControlsProps> = ({
                     value={volume}
                     onChange={(e) => onVolumeChange(Number(e.target.value))}
                     className="focus-volume-slider"
+                    aria-label={`Volume: ${volume}%`}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-valuenow={volume}
                 />
             </div>
         </div>

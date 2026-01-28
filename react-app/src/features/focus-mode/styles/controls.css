@@ -1,0 +1,137 @@
+/* ===========================================
+   Controls & Volume Styles
+   =========================================== */
+
+.focus-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 24px;
+}
+
+.focus-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--ytm-focus-primary);
+    transition: transform 0.1s, color 0.2s;
+}
+
+.focus-btn svg {
+    fill: currentColor;
+    width: 32px;
+    height: 32px;
+}
+
+.focus-btn.play-pause svg {
+    width: 48px;
+    height: 48px;
+}
+
+.focus-btn:hover {
+    transform: scale(1.1);
+    color: #fff;
+}
+
+.focus-btn:active {
+    transform: scale(0.95);
+}
+
+.focus-btn.lyrics-toggle.active {
+    opacity: 1;
+    color: var(--ytm-focus-primary);
+}
+
+.focus-volume-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+}
+
+.focus-volume-container .volume-icon {
+    width: 24px;
+    height: 24px;
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.focus-volume-container:hover .volume-icon {
+    color: var(--ytm-focus-primary);
+}
+
+.focus-volume-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 0;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+    opacity: 0;
+    transition: width 0.2s ease, opacity 0.2s ease;
+}
+
+.focus-volume-container:hover .focus-volume-slider {
+    width: 80px;
+    opacity: 1;
+}
+
+.focus-volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    background: var(--ytm-focus-primary);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.focus-volume-slider::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    background: var(--ytm-focus-primary);
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+}
+
+.focus-pill-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    opacity: 1;
+    transition: all 0.2s ease;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 8px 16px;
+    border-radius: 24px;
+    font-size: 0.85rem;
+    width: auto;
+    height: auto;
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+}
+
+.focus-pill-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    transform: scale(1.02);
+}
+
+.focus-pill-btn.active {
+    opacity: 1;
+    color: var(--ytm-focus-primary);
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.focus-pill-btn svg {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+}

@@ -1,0 +1,23 @@
+/* ===========================================
+   Focus Mode - Main CSS Entry Point
+   
+   This file imports all modular CSS files.
+   Organized by component/feature for maintainability.
+   =========================================== */
+
+/* Core */
+@import './variables.css';
+@import './base.css';
+
+/* Layout */
+@import './overlay.css';
+
+/* Components */
+@import './player.css';
+@import './controls.css';
+@import './lyrics.css';
+@import './upnext.css';
+@import './pix.css';
+
+/* Responsive */
+@import './responsive.css';

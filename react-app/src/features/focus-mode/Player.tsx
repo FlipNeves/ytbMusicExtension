@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react';
+import { getVideoId } from '../../services';
 
 interface PlayerProps {
     albumArt: string;
@@ -44,23 +45,6 @@ const Player: React.FC<PlayerProps> = ({
     };
 
     const handleShare = async () => {
-        const getVideoId = (): Promise<string | null> => {
-            return new Promise((resolve) => {
-                const handler = (event: MessageEvent) => {
-                    if (event.data?.type === 'YTM_VIDEO_ID_RESPONSE') {
-                        window.removeEventListener('message', handler);
-                        resolve(event.data.videoId);
-                    }
-                };
-                window.addEventListener('message', handler);
-                window.postMessage({ type: 'YTM_GET_VIDEO_ID' }, '*');
-                setTimeout(() => {
-                    window.removeEventListener('message', handler);
-                    resolve(null);
-                }, 500);
-            });
-        };
-
         let url = window.location.href;
         const videoId = await getVideoId();
         if (videoId) {
@@ -82,15 +66,19 @@ const Player: React.FC<PlayerProps> = ({
                 className="focus-album-container"
                 onClick={onPlayPause}
                 title={isPlaying ? 'Pausar' : 'Reproduzir'}
+                role="button"
+                aria-label={isPlaying ? 'Pausar música' : 'Reproduzir música'}
+                tabIndex={0}
+                onKeyDown={(e) => e.key === 'Enter' && onPlayPause?.()}
             >
-                <img src={albumArt} className="focus-album-art" crossOrigin="anonymous" />
-                <div className="focus-album-overlay">
+                <img src={albumArt} className="focus-album-art" crossOrigin="anonymous" alt={`Capa do álbum: ${title}`} />
+                <div className="focus-album-overlay" aria-hidden="true">
                     {isPlaying ? (
-                        <svg viewBox="0 0 24 24" fill="currentColor">
+                        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                             <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
                         </svg>
                     ) : (
-                        <svg viewBox="0 0 24 24" fill="currentColor">
+                        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                             <path d="M8 5v14l11-7z" />
                         </svg>
                     )}
@@ -98,8 +86,8 @@ const Player: React.FC<PlayerProps> = ({
             </div>
 
             <div className="focus-song-info">
-                <button className="focus-action-btn" onClick={handleShare} title="Compartilhar">
-                    <svg viewBox="0 0 24 24" fill="none">
+                <button className="focus-action-btn" onClick={handleShare} title="Compartilhar" aria-label="Compartilhar link da música">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                         <path d="M15 5l-1.41 1.41L15.17 8H9c-2.76 0-5 2.24-5 5v4h2v-4c0-1.65 1.35-3 3-3h6.17l-1.58 1.59L15 13l4-4-4-4z" fill="currentColor" />
                     </svg>
                 </button>
@@ -114,13 +102,15 @@ const Player: React.FC<PlayerProps> = ({
                         className={`focus-action-btn ${isLiked ? 'active' : ''}`}
                         onClick={onLike}
                         title={isLiked ? "Remover curtida" : "Curtir"}
+                        aria-label={isLiked ? "Remover curtida da música" : "Curtir música"}
+                        aria-pressed={isLiked}
                     >
                         {isLiked ? (
-                            <svg viewBox="0 0 24 24" fill="currentColor">
+                            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                                 <path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z" />
                             </svg>
                         ) : (
-                            <svg viewBox="0 0 24 24" fill="currentColor">
+                            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                                 <path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2zM9 19V9l4.34-4.34L12 9h9v2l-3 7H9z" />
                             </svg>
                         )}
@@ -142,6 +132,13 @@ const Player: React.FC<PlayerProps> = ({
                     onMouseEnter={() => setHovered(true)}
                     onMouseLeave={() => setHovered(false)}
                     onMouseMove={handleMouseMove}
+                    role="slider"
+                    aria-label="Progresso da música"
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-valuenow={Math.round(progress)}
+                    aria-valuetext={`${currentTime} de ${totalTime}`}
+                    tabIndex={0}
                 >
                     <div
                         className="focus-progress-fill"

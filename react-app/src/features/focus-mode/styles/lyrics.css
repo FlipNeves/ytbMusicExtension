@@ -1,0 +1,102 @@
+/* ===========================================
+   Lyrics Panel Styles
+   =========================================== */
+
+.focus-lyrics {
+    display: none;
+    flex-direction: column;
+    width: 0;
+    height: 500px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 24px 0;
+    border-radius: 16px;
+    backdrop-filter: blur(10px);
+    overflow: hidden;
+    transition: width 0.4s ease, padding 0.4s ease, opacity 0.3s ease;
+    opacity: 0;
+}
+
+.focus-lyrics.visible {
+    display: flex;
+    width: 350px;
+    padding: 24px;
+    opacity: 1;
+}
+
+.focus-lyrics-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-shrink: 0;
+}
+
+.focus-lyrics h3 {
+    color: var(--ytm-focus-secondary);
+    text-transform: uppercase;
+    font-size: 1.5rem;
+    letter-spacing: 1px;
+    margin: 0;
+}
+
+.focus-lyrics-content {
+    flex: 1;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+.focus-lyrics-content::-webkit-scrollbar {
+    width: 4px;
+}
+
+.focus-lyrics-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+}
+
+.lyrics-text {
+    color: var(--ytm-focus-primary);
+    font-size: 1.5rem;
+    line-height: 1.8;
+    white-space: pre-wrap;
+    font-family: var(--ytm-focus-font-family);
+    margin: 0;
+}
+
+.synced-lyrics {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.lyric-line {
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 1.5rem;
+    line-height: 1.5;
+    font-family: var(--ytm-focus-font-family);
+    transition: color 0.3s ease, font-weight 0.3s ease, opacity 0.2s ease;
+    cursor: pointer;
+}
+
+.lyric-line:hover {
+    opacity: 1;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+.lyric-line.past {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.lyric-line.active {
+    color: var(--ytm-focus-primary);
+    font-weight: 600;
+}
+
+.lyrics-loading,
+.lyrics-error {
+    color: var(--ytm-focus-secondary);
+    font-size: 1.5rem;
+    text-align: center;
+    padding: 20px 0;
+}

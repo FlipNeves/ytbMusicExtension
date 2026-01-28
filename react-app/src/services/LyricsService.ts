@@ -149,7 +149,6 @@ export const fetchLyrics = async (
 ): Promise<LyricsResult> => {
     const cacheKey = getCacheKey(title, artist);
 
-    // Return cached result if available
     if (lyricsCache.has(cacheKey)) {
         return lyricsCache.get(cacheKey)!;
     }
@@ -158,10 +157,8 @@ export const fetchLyrics = async (
     const cleanArtist = normalizeArtist(artist);
     const abortSignal = signal || new AbortController().signal;
 
-    // Try /api/get endpoint first
     let data = await tryGetEndpoint(cleanTitle, cleanArtist, duration, abortSignal);
 
-    // Fallback to /api/search if needed
     if (!data && !abortSignal.aborted) {
         data = await trySearchEndpoint(cleanTitle, cleanArtist, abortSignal);
     }
@@ -170,7 +167,6 @@ export const fetchLyrics = async (
         throw new DOMException('Aborted', 'AbortError');
     }
 
-    // Process result
     let result: LyricsResult;
 
     if (data?.syncedLyrics) {
@@ -182,7 +178,11 @@ export const fetchLyrics = async (
         result = { syncedLyrics: [], plainLyrics: null };
     }
 
-    // Cache the result
+    if (lyricsCache.size >= 5) {
+        const firstKey = lyricsCache.keys().next().value;
+        if (firstKey) lyricsCache.delete(firstKey);
+    }
+
     lyricsCache.set(cacheKey, result);
     return result;
 };

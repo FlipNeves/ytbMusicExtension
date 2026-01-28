@@ -1,0 +1,133 @@
+/* ===========================================
+   Focus Button & Overlay
+   =========================================== */
+
+#btn-cinema-mode {
+    background: transparent;
+    border: none;
+    color: var(--ytmusic-text-secondary);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: background 0.4s, color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#btn-cinema-mode:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+#btn-cinema-mode svg {
+    width: 24px;
+    height: 24px;
+    fill: currentColor;
+}
+
+#focus-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: var(--ytm-focus-bg);
+    z-index: 9999;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-evenly;
+    transition: opacity 0.5s var(--ease-out-expo);
+    font-family: var(--ytm-focus-font-family);
+    backdrop-filter: blur(4px) brightness(0.6);
+    will-change: opacity;
+}
+
+#focus-overlay.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+#focus-overlay::before {
+    content: '';
+    position: absolute;
+    top: -12%;
+    left: -12%;
+    right: -12%;
+    bottom: -12%;
+    background-image: var(--ytm-album-art-url);
+    background-size: cover;
+    background-position: center;
+    opacity: 0.6;
+    z-index: -1;
+    filter: blur(4px) brightness(0.7);
+    will-change: transform;
+    animation: breathe 25s infinite alternate ease-in-out;
+    transition: background-image 1s ease-in-out;
+}
+
+.focus-close-btn,
+.focus-action-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: rgba(255, 255, 255, 0.8);
+    transition: all 0.2s ease;
+    backdrop-filter: blur(10px);
+}
+
+.focus-close-btn {
+    position: absolute;
+    top: 30px;
+    right: 30px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+    transition: background 0.2s;
+}
+
+.focus-close-btn:hover,
+.focus-action-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    transform: scale(1.05);
+}
+
+.focus-close-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.focus-close-btn svg,
+.focus-action-btn svg {
+    width: 22px;
+    height: 22px;
+    fill: currentColor;
+}
+
+.focus-close-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+.focus-action-btn.active {
+    background: rgba(255, 107, 157, 0.15);
+    border-color: rgba(255, 107, 157, 0.4);
+    color: #ff6b9d;
+}

@@ -1,0 +1,84 @@
+/* ===========================================
+   Base Styles & Animations
+   =========================================== */
+
+body::after {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--minha-cor-tema);
+    opacity: 0.05;
+    pointer-events: none;
+    z-index: 9998;
+    mix-blend-mode: overlay;
+    transition: background-color 1s ease;
+}
+
+ytmusic-chip-cloud-chip-renderer[aria-selected="true"],
+ytmusic-play-button-renderer,
+#progress-bar.ytmusic-player-bar {
+    --ytmusic-color-white1: var(--minha-cor-tema) !important;
+}
+
+.title.ytmusic-player-bar {
+    color: var(--minha-cor-tema) !important;
+}
+
+body.focus-mode-active {
+    overflow: hidden !important;
+}
+
+ytmusic-mealbar-promo-renderer {
+    display: none !important;
+}
+
+/* ===========================================
+   Animations
+   =========================================== */
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes breathe {
+    0% {
+        transform: scale(1) rotate(0deg);
+    }
+
+    100% {
+        transform: scale(1.1) rotate(2deg);
+    }
+}
+
+@keyframes toastFadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}

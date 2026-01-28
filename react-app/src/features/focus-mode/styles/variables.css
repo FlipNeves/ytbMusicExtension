@@ -1,0 +1,12 @@
+/* ===========================================
+   Focus Mode CSS Variables
+   =========================================== */
+
+:root {
+    --ytm-focus-primary: #ffffff;
+    --ytm-focus-secondary: rgba(255, 255, 255, 0.7);
+    --ytm-focus-accent: #cabbbb;
+    --ytm-focus-bg: #000000;
+    --ytm-focus-font-family: 'Roboto', 'Arial', sans-serif;
+    --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
+}
