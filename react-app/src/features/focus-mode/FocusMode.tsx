@@ -5,6 +5,7 @@ import FocusButton from './FocusButton';
 import { useYTMObserver } from '../../hooks/useYTMObserver';
 import { useVisualizer } from '../../hooks/useVisualizer';
 import FocusPlayer from './FocusPlayer';
+
 import PixDonation from './PixDonation';
 import Lyrics from './Lyrics';
 import { ErrorBoundary } from './ErrorBoundary';

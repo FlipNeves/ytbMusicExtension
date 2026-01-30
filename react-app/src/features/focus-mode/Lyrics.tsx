@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import type { LyricsProps, LyricLine } from '../../types';
 import { fetchLyrics, isLyricsInCache } from '../../services';
+import LyricsSkeleton from './LyricsSkeleton';
 
 /**
  * Lyrics component - Displays synchronized or plain lyrics
@@ -97,8 +98,8 @@ const Lyrics: React.FC<LyricsProps> = ({ title, artist, isVisible, currentTime =
         const activeLineCenter = activeLine.offsetTop + activeLine.clientHeight / 2;
         const distance = Math.abs(containerCenter - activeLineCenter);
 
-        const RE_ENABLE_THRESHOLD = 100; 
-        const DISABLE_THRESHOLD = 110; 
+        const RE_ENABLE_THRESHOLD = 100;
+        const DISABLE_THRESHOLD = 110;
 
         if (distance < RE_ENABLE_THRESHOLD && !autoScroll) {
             setAutoScroll(true);
@@ -142,7 +143,7 @@ const Lyrics: React.FC<LyricsProps> = ({ title, artist, isVisible, currentTime =
                 ref={containerRef}
                 onScroll={handleScroll}
             >
-                {loading && <p className="lyrics-loading">Buscando letra...</p>}
+                {loading && <LyricsSkeleton />}
                 {error && <p className="lyrics-error">{error}</p>}
 
                 {syncedLyrics.length > 0 && (
