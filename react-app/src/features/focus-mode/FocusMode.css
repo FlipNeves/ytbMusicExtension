@@ -89,11 +89,10 @@ ytmusic-play-button-renderer,
     background-image: var(--ytm-album-art-url);
     background-size: cover;
     background-position: center;
-    opacity: 0.6;
+    transform: translateZ(0);
+    opacity: 0.5;
     z-index: -1;
-    filter: blur(4px) brightness(0.7);
-    will-change: transform;
-    animation: breathe 25s infinite alternate ease-in-out;
+    filter: blur(20px) brightness(0.6);
     transition: background-image 1s ease-in-out;
 }
 
@@ -572,16 +571,6 @@ ytmusic-play-button-renderer,
 
     to {
         opacity: 1;
-    }
-}
-
-@keyframes breathe {
-    0% {
-        transform: scale(1) rotate(0deg);
-    }
-
-    100% {
-        transform: scale(1.1) rotate(2deg);
     }
 }
 

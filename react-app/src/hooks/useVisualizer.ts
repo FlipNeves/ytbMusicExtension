@@ -6,11 +6,18 @@ export const useVisualizer = (visualizerRef: React.RefObject<HTMLDivElement | nu
     const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
     const animationIdRef = useRef<number | null>(null);
     const audioInitFailedRef = useRef<boolean>(false);
+    const barsRef = useRef<HTMLDivElement[]>([]);
 
     useEffect(() => {
         let lastFrameTime = 0;
         const targetFPS = 30;
         const frameInterval = 1000 / targetFPS;
+
+        const updateBarsCache = () => {
+            if (visualizerRef.current) {
+                barsRef.current = Array.from(visualizerRef.current.querySelectorAll<HTMLDivElement>('.bar'));
+            }
+        };
 
         const initAudioContext = () => {
             if (audioInitFailedRef.current) return false;
@@ -43,13 +50,12 @@ export const useVisualizer = (visualizerRef: React.RefObject<HTMLDivElement | nu
             }
             lastFrameTime = timestamp;
 
-            if (document.hidden || !visualizerRef.current) {
+            if (document.hidden || !visualizerRef.current || barsRef.current.length === 0) {
                 animationIdRef.current = requestAnimationFrame(drawFallback);
                 return;
             }
 
-            const bars = visualizerRef.current.querySelectorAll<HTMLDivElement>('.bar');
-            bars.forEach((bar) => {
+            barsRef.current.forEach((bar) => {
                 const scale = 0.2 + Math.random() * 0.8;
                 bar.style.transform = `scaleY(${scale})`;
             });
@@ -69,11 +75,11 @@ export const useVisualizer = (visualizerRef: React.RefObject<HTMLDivElement | nu
                 return;
             }
 
-            if (analyserRef.current && visualizerRef.current) {
+            if (analyserRef.current && barsRef.current.length > 0) {
                 const dataArray = new Uint8Array(analyserRef.current.frequencyBinCount);
                 analyserRef.current.getByteFrequencyData(dataArray);
 
-                const bars = visualizerRef.current.querySelectorAll<HTMLDivElement>('.bar');
+                const bars = barsRef.current;
                 const barCount = bars.length;
 
                 for (let i = 0; i < barCount; i++) {
@@ -87,6 +93,7 @@ export const useVisualizer = (visualizerRef: React.RefObject<HTMLDivElement | nu
         };
 
         if (isEnabled) {
+            updateBarsCache();
             const audioInitialized = initAudioContext();
 
             if (audioInitialized) {
@@ -109,8 +116,9 @@ export const useVisualizer = (visualizerRef: React.RefObject<HTMLDivElement | nu
             }
             // Reset bars when not playing
             if (visualizerRef.current) {
-                const bars = visualizerRef.current.querySelectorAll<HTMLDivElement>('.bar');
-                bars.forEach((bar) => {
+                if (barsRef.current.length === 0) updateBarsCache();
+
+                barsRef.current.forEach((bar) => {
                     bar.style.transform = 'scaleY(0.1)';
                 });
             }
