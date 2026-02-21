@@ -18,8 +18,7 @@
     height: 100%;
     transform-origin: bottom;
     transform: scaleY(0.1);
-    transition: transform 0.1s ease-out;
-    will-change: transform;
+    transition: transform 0.15s ease-out;
 }
 
 .focus-player {

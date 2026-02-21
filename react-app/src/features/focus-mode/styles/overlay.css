@@ -40,8 +40,6 @@
     justify-content: space-evenly;
     transition: opacity 0.5s var(--ease-out-expo);
     font-family: var(--ytm-focus-font-family);
-    backdrop-filter: blur(4px) brightness(0.6);
-    will-change: opacity;
 }
 
 #focus-overlay.visible {
@@ -61,10 +59,9 @@
     background-position: center;
     opacity: 0.6;
     z-index: -1;
-    filter: blur(4px) brightness(0.7);
-    will-change: transform;
-    animation: breathe 25s infinite alternate ease-in-out;
+    filter: blur(2px) brightness(0.7);
     transition: background-image 1s ease-in-out;
+    contain: layout style paint;
 }
 
 .focus-close-btn,

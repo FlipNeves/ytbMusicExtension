@@ -7,15 +7,20 @@ export const useVisualizer = (visualizerRef: React.RefObject<HTMLDivElement | nu
     const animationIdRef = useRef<number | null>(null);
     const audioInitFailedRef = useRef<boolean>(false);
     const barsRef = useRef<HTMLDivElement[]>([]);
+    const lastValuesRef = useRef<number[]>([]);
+    const isPausedRef = useRef<boolean>(false);
+    const dataArrayRef = useRef<Uint8Array<ArrayBuffer> | null>(null);
 
     useEffect(() => {
         let lastFrameTime = 0;
-        const targetFPS = 30;
+        const targetFPS = 20;
         const frameInterval = 1000 / targetFPS;
+        const minChangeThreshold = 0.02;
 
         const updateBarsCache = () => {
             if (visualizerRef.current) {
                 barsRef.current = Array.from(visualizerRef.current.querySelectorAll<HTMLDivElement>('.bar'));
+                lastValuesRef.current = new Array(barsRef.current.length).fill(0.1);
             }
         };
 
@@ -31,6 +36,7 @@ export const useVisualizer = (visualizerRef: React.RefObject<HTMLDivElement | nu
                     audioCtxRef.current = new AudioContext();
                     analyserRef.current = audioCtxRef.current.createAnalyser();
                     analyserRef.current.fftSize = 32;
+                    analyserRef.current.smoothingTimeConstant = 0.8;
                     sourceRef.current = audioCtxRef.current.createMediaElementSource(video);
                     sourceRef.current.connect(analyserRef.current);
                     analyserRef.current.connect(audioCtxRef.current.destination);
@@ -50,14 +56,25 @@ export const useVisualizer = (visualizerRef: React.RefObject<HTMLDivElement | nu
             }
             lastFrameTime = timestamp;
 
-            if (document.hidden || !visualizerRef.current || barsRef.current.length === 0) {
+            if (document.hidden) {
+                isPausedRef.current = true;
                 animationIdRef.current = requestAnimationFrame(drawFallback);
                 return;
             }
 
-            barsRef.current.forEach((bar) => {
-                const scale = 0.2 + Math.random() * 0.8;
-                bar.style.transform = `scaleY(${scale})`;
+            if (!visualizerRef.current || barsRef.current.length === 0) {
+                animationIdRef.current = requestAnimationFrame(drawFallback);
+                return;
+            }
+
+            barsRef.current.forEach((bar, i) => {
+                const newScale = 0.2 + Math.random() * 0.8;
+                const oldScale = lastValuesRef.current[i] || 0.1;
+                
+                if (Math.abs(newScale - oldScale) > minChangeThreshold) {
+                    bar.style.transform = `scaleY(${newScale})`;
+                    lastValuesRef.current[i] = newScale;
+                }
             });
 
             animationIdRef.current = requestAnimationFrame(drawFallback);
@@ -71,24 +88,43 @@ export const useVisualizer = (visualizerRef: React.RefObject<HTMLDivElement | nu
             lastFrameTime = timestamp;
 
             if (document.hidden) {
+                isPausedRef.current = true;
                 animationIdRef.current = requestAnimationFrame(draw);
                 return;
             }
 
+            isPausedRef.current = false;
+
             if (analyserRef.current && barsRef.current.length > 0) {
-                const dataArray = new Uint8Array(analyserRef.current.frequencyBinCount);
+                if (!dataArrayRef.current || dataArrayRef.current.length !== analyserRef.current.frequencyBinCount) {
+                    dataArrayRef.current = new Uint8Array(analyserRef.current.frequencyBinCount);
+                }
+                const dataArray = dataArrayRef.current;
                 analyserRef.current.getByteFrequencyData(dataArray);
 
                 const bars = barsRef.current;
                 const barCount = bars.length;
 
+                let hasChanges = false;
+
                 for (let i = 0; i < barCount; i++) {
                     const dataIndex = Math.floor(dataArray.length / barCount * i);
                     const val = dataArray[dataIndex] || 0;
-                    const scale = (val / 255) * 1.5;
-                    bars[i].style.transform = `scaleY(${Math.max(0.05, scale)})`;
+                    const newScale = Math.max(0.05, (val / 255) * 1.5);
+                    const oldScale = lastValuesRef.current[i] || 0.1;
+                    
+                    if (Math.abs(newScale - oldScale) > minChangeThreshold) {
+                        bars[i].style.transform = `scaleY(${newScale})`;
+                        lastValuesRef.current[i] = newScale;
+                        hasChanges = true;
+                    }
+                }
+
+                if (!hasChanges && barsRef.current.length > 0) {
+                    lastFrameTime = timestamp + frameInterval * 2;
                 }
             }
+            
             animationIdRef.current = requestAnimationFrame(draw);
         };
 
@@ -118,8 +154,9 @@ export const useVisualizer = (visualizerRef: React.RefObject<HTMLDivElement | nu
             if (visualizerRef.current) {
                 if (barsRef.current.length === 0) updateBarsCache();
 
-                barsRef.current.forEach((bar) => {
+                barsRef.current.forEach((bar, i) => {
                     bar.style.transform = 'scaleY(0.1)';
+                    lastValuesRef.current[i] = 0.1;
                 });
             }
         }
