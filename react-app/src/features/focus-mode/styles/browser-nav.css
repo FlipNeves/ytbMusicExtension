@@ -1,0 +1,48 @@
+.browser-nav-buttons-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 999;
+}
+
+ytmusic-nav-bar[is-bauhaus-sidenav-enabled] .left-content.ytmusic-nav-bar yt-icon-button.ytmusic-nav-bar {
+    margin-right: 0 !important;
+}
+
+ytmusic-nav-bar .center-content {
+    padding-left: 200px !important;
+}
+
+.browser-nav-buttons-container.browser-nav-right {
+    margin-left: 0;
+    margin-right: 16px;
+}
+
+.browser-nav-btn {
+    background: transparent;
+    border: none;
+    color: var(--ytmusic-text-primary, #fff);
+    cursor: pointer;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    opacity: 0.6;
+    transition: opacity 0.2s ease, background-color 0.2s ease;
+    width: 40px;
+    height: 40px;
+}
+
+.browser-nav-btn:hover {
+    opacity: 1;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.browser-nav-btn:active {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.browser-nav-btn svg {
+    pointer-events: none;
+}
