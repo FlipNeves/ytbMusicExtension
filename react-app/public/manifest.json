@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "Focus Music Player",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "description": "Focus Music Player: Experiência imersiva para YouTube Music com modo foco",
     "icons": {
         "16": "icon48.png",
