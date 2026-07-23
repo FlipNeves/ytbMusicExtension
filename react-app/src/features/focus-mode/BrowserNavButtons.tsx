@@ -6,33 +6,40 @@ const BrowserNavButtons: React.FC = () => {
     const [target, setTarget] = useState<Element | null>(null);
 
     useEffect(() => {
-        const interval = setInterval(() => {
+        // Mantém o intervalo ativo: se a SPA do YTM recriar a nav bar,
+        // o container é recriado e o portal volta a renderizar.
+        const ensureContainer = () => {
+            const existing = document.getElementById('btn-browser-nav-container');
+            if (existing?.isConnected) return;
+
             const leftContent = document.querySelector('ytmusic-nav-bar .left-content') || document.querySelector('ytmusic-nav-bar');
-            if (leftContent && !document.getElementById('btn-browser-nav-container')) {
+            if (leftContent) {
                 const btnContainer = document.createElement('div');
                 btnContainer.id = 'btn-browser-nav-container';
                 btnContainer.className = 'browser-nav-buttons-container';
 
                 if (leftContent.classList.contains('left-content')) {
-                    const secondItem = leftContent.children[1]; 
-                    leftContent.insertBefore(btnContainer, secondItem); 
+                    const secondItem = leftContent.children[1];
+                    leftContent.insertBefore(btnContainer, secondItem);
                 } else {
                     leftContent.appendChild(btnContainer);
                 }
                 setTarget(btnContainer);
-                clearInterval(interval);
-            } else {
-                const rightControls = document.querySelector('.right-controls-buttons');
-                if (rightControls && !document.getElementById('btn-browser-nav-container')) {
-                    const btnContainer = document.createElement('div');
-                    btnContainer.id = 'btn-browser-nav-container';
-                    btnContainer.className = 'browser-nav-buttons-container browser-nav-right';
-                    rightControls.prepend(btnContainer);
-                    setTarget(btnContainer);
-                    clearInterval(interval);
-                }
+                return;
             }
-        }, 1000);
+
+            const rightControls = document.querySelector('.right-controls-buttons');
+            if (rightControls) {
+                const btnContainer = document.createElement('div');
+                btnContainer.id = 'btn-browser-nav-container';
+                btnContainer.className = 'browser-nav-buttons-container browser-nav-right';
+                rightControls.prepend(btnContainer);
+                setTarget(btnContainer);
+            }
+        };
+
+        ensureContainer();
+        const interval = setInterval(ensureContainer, 1000);
 
         return () => clearInterval(interval);
     }, []);

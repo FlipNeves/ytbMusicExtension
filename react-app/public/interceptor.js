@@ -141,11 +141,6 @@ function findNextValidTrack(searchItems, startIndex, nowPlayingTitle, nowPlaying
                 continue;
             }
 
-            // Filter out data URLs
-            if (candidateData.nextArt && candidateData.nextArt.startsWith('data:image/')) {
-                candidateData.nextArt = '';
-            }
-
             return candidateData;
         }
     }

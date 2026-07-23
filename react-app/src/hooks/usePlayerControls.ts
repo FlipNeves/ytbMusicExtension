@@ -71,11 +71,13 @@ export const usePlayerControls = (): PlayerControls & {
             setVolumeState(Math.round(Math.sqrt(video.volume) * 100));
         };
 
-        // Bind to video element
+        // Bind to video element (guarda referência para o cleanup correto)
+        let boundVideo: HTMLVideoElement | null = null;
         const bindVideoEvents = () => {
             const video = document.querySelector(SELECTORS.VIDEO) as HTMLVideoElement;
             if (video && !video.dataset.playerControlsBound) {
                 video.dataset.playerControlsBound = 'true';
+                boundVideo = video;
                 video.addEventListener('play', handlePlay);
                 video.addEventListener('pause', handlePause);
                 video.addEventListener('volumechange', handleVolumeChange);
@@ -112,12 +114,11 @@ export const usePlayerControls = (): PlayerControls & {
             clearInterval(retryInterval);
             likeObserver?.disconnect();
 
-            const video = document.querySelector(SELECTORS.VIDEO) as HTMLVideoElement;
-            if (video) {
-                video.removeEventListener('play', handlePlay);
-                video.removeEventListener('pause', handlePause);
-                video.removeEventListener('volumechange', handleVolumeChange);
-                delete video.dataset.playerControlsBound;
+            if (boundVideo) {
+                boundVideo.removeEventListener('play', handlePlay);
+                boundVideo.removeEventListener('pause', handlePause);
+                boundVideo.removeEventListener('volumechange', handleVolumeChange);
+                delete boundVideo.dataset.playerControlsBound;
             }
         };
     }, []);

@@ -163,10 +163,12 @@ export const useSongState = () => {
             }
         };
 
+        let boundVideo: HTMLVideoElement | null = null;
         const bindVideo = () => {
             const video = document.querySelector(SELECTORS.VIDEO) as HTMLVideoElement;
             if (video && !video.dataset.focusModeBound) {
                 video.dataset.focusModeBound = 'true';
+                boundVideo = video;
                 video.addEventListener('play', syncSongInfo);
                 video.addEventListener('pause', syncSongInfo);
                 video.addEventListener('timeupdate', throttledTimeUpdate);
@@ -189,13 +191,13 @@ export const useSongState = () => {
             if (mutationTimeout) clearTimeout(mutationTimeout);
             clearInterval(videoInterval);
 
-            const video = document.querySelector(SELECTORS.VIDEO) as HTMLVideoElement;
-            if (video) {
-                video.removeEventListener('play', syncSongInfo);
-                video.removeEventListener('pause', syncSongInfo);
-                video.removeEventListener('timeupdate', throttledTimeUpdate);
-                video.removeEventListener('loadeddata', syncSongInfo);
-                video.removeEventListener('ended', handleEnded);
+            if (boundVideo) {
+                boundVideo.removeEventListener('play', syncSongInfo);
+                boundVideo.removeEventListener('pause', syncSongInfo);
+                boundVideo.removeEventListener('timeupdate', throttledTimeUpdate);
+                boundVideo.removeEventListener('loadeddata', syncSongInfo);
+                boundVideo.removeEventListener('ended', handleEnded);
+                delete boundVideo.dataset.focusModeBound;
             }
         };
     }, [syncSongInfo]);

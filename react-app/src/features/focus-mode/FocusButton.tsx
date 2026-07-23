@@ -9,16 +9,23 @@ const FocusButton: React.FC<FocusButtonProps> = ({ onClick }) => {
     const [target, setTarget] = React.useState<Element | null>(null);
 
     React.useEffect(() => {
-        const interval = setInterval(() => {
+        // Mantém o intervalo ativo: se a SPA do YTM recriar a barra de controles,
+        // o container é recriado e o portal volta a renderizar.
+        const ensureContainer = () => {
+            const existing = document.getElementById('btn-cinema-mode-container');
+            if (existing?.isConnected) return;
+
             const rightControls = document.querySelector('.right-controls-buttons');
-            if (rightControls && !document.getElementById('btn-cinema-mode')) {
-                const btnContainer = document.createElement('div');
-                btnContainer.id = 'btn-cinema-mode-container';
-                rightControls.prepend(btnContainer);
-                setTarget(btnContainer);
-                clearInterval(interval);
-            }
-        }, 1000);
+            if (!rightControls) return;
+
+            const btnContainer = document.createElement('div');
+            btnContainer.id = 'btn-cinema-mode-container';
+            rightControls.prepend(btnContainer);
+            setTarget(btnContainer);
+        };
+
+        ensureContainer();
+        const interval = setInterval(ensureContainer, 1000);
 
         return () => clearInterval(interval);
     }, []);

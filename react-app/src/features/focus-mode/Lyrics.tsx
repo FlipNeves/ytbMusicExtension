@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import type { LyricsProps, LyricLine } from '../../types';
 import { fetchLyrics, isLyricsInCache } from '../../services';
 import LyricsSkeleton from './LyricsSkeleton';
@@ -73,19 +73,32 @@ const Lyrics: React.FC<LyricsProps> = ({ title, artist, isVisible, currentTime =
     const [autoScroll, setAutoScroll] = useState(true);
     const isProgrammaticScroll = useRef(false);
 
-    // Auto-scroll to active lyric line
+    /**
+     * Find the active lyric line based on current time
+     */
+    const activeIndex = useMemo(() => {
+        for (let i = syncedLyrics.length - 1; i >= 0; i--) {
+            if (currentTime >= syncedLyrics[i].time) {
+                return i;
+            }
+        }
+        return -1;
+    }, [syncedLyrics, currentTime]);
+
+    // Auto-scroll to active lyric line (only when the active line changes)
     useEffect(() => {
-        if (autoScroll && activeLineRef.current && containerRef.current) {
+        if (autoScroll && activeIndex >= 0 && activeLineRef.current && containerRef.current) {
             isProgrammaticScroll.current = true;
             activeLineRef.current.scrollIntoView({
                 behavior: 'smooth',
                 block: 'center',
             });
-            setTimeout(() => {
+            const timeout = setTimeout(() => {
                 isProgrammaticScroll.current = false;
             }, 500);
+            return () => clearTimeout(timeout);
         }
-    }, [currentTime, autoScroll]);
+    }, [activeIndex, autoScroll]);
 
     const handleScroll = () => {
         if (isProgrammaticScroll.current) return;
@@ -107,20 +120,6 @@ const Lyrics: React.FC<LyricsProps> = ({ title, artist, isVisible, currentTime =
             setAutoScroll(false);
         }
     };
-
-    /**
-     * Find the active lyric line based on current time
-     */
-    const getActiveLine = (): number => {
-        for (let i = syncedLyrics.length - 1; i >= 0; i--) {
-            if (currentTime >= syncedLyrics[i].time) {
-                return i;
-            }
-        }
-        return -1;
-    };
-
-    const activeIndex = getActiveLine();
 
     return (
         <div className={`focus-lyrics ${isVisible ? 'visible' : ''}`}>

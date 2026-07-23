@@ -42,6 +42,8 @@ export const seekTo = (time: number): void => {
 export const getVideoId = (): Promise<string | null> => {
     return new Promise((resolve) => {
         const handler = (event: MessageEvent) => {
+            if (event.source !== window) return;
+
             if (event.data?.type === MESSAGE_TYPES.VIDEO_ID_RESPONSE) {
                 window.removeEventListener('message', handler);
                 resolve(event.data.videoId);

@@ -5,6 +5,7 @@
  */
 
 import type { LyricLine, LyricsResult, LyricsApiResponse } from '../types';
+import { LIMITS } from '../constants';
 
 /** Patterns to remove from song titles for better API matching */
 const PATTERNS_TO_REMOVE = [
@@ -178,7 +179,7 @@ export const fetchLyrics = async (
         result = { syncedLyrics: [], plainLyrics: null };
     }
 
-    if (lyricsCache.size >= 5) {
+    if (lyricsCache.size >= LIMITS.MAX_LYRICS_CACHE) {
         const firstKey = lyricsCache.keys().next().value;
         if (firstKey) lyricsCache.delete(firstKey);
     }
