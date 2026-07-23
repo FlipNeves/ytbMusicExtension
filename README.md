@@ -35,10 +35,11 @@ Developing this extension provided deep learning about:
 
 Immersive full-screen interface that eliminates visual distractions:
 
-- **Featured album cover** with a blurred background effect
+- **Featured album cover** with an ambient blurred backdrop
 - **Smooth animation** for transitions between songs
 - **Dynamic theme** - interface colors are automatically extracted from the album cover
-- **Keyboard shortcut** - press `ESC` to quickly exit
+- **Fluid layout** - scales from small laptops to ultrawide monitors
+- **Keyboard shortcuts** - `ESC` to exit, `Space` to play/pause, arrows to seek and change volume
 
 ### Synchronized Lyrics
 
@@ -94,7 +95,9 @@ ytbMusicExtension/
 ├── react-app/                    # Main application
 │   ├── public/
 │   │   ├── manifest.json         # Manifest V3 configuration
-│   │   └── interceptor.js        # Script injected into the page context
+│   │   └── interceptor.js        # Content script that runs in the page context (world: MAIN)
+│   ├── scripts/
+│   │   └── build-firefox.mjs     # Generates the Firefox build (dist-firefox/)
 │   └── src/
 │       ├── features/
 │       │   └── focus-mode/       # Focus Mode components
@@ -128,6 +131,7 @@ ytbMusicExtension/
 | **React** | 19.2 | Focus Mode Interface |
 | **TypeScript** | 5.9 | Static typing |
 | **Vite (Rolldown)** | 7.2 | Build and bundling |
+| **Vitest** | 4.1 | Unit tests |
 | **Manifest V3** | - | Extension architecture |
 | **qrcode.react** | 4.2 | PIX QR Code generation |
 
@@ -150,14 +154,28 @@ ytbMusicExtension/
 
 3. **Build the extension:**
    ```bash
-   npm run build
+   npm run build            # Chrome / Edge / other Chromium browsers → dist/
+   npm run build:firefox    # Firefox (128+) → dist-firefox/
    ```
 
 4. **Load in the browser:**
+
+   **Chrome / Edge / Brave / Opera (Chromium 111+):**
    - Go to `edge://extensions` (Edge) or `chrome://extensions` (Chrome)
    - Enable **Developer mode**
    - Click on **Load unpacked**
    - Select the `react-app/dist` folder
+
+   **Firefox (128+):**
+   - Go to `about:debugging#/runtime/this-firefox`
+   - Click on **Load Temporary Add-on...**
+   - Select the `react-app/dist-firefox/manifest.json` file
+   - Note: in Firefox, MV3 host permissions are opt-in — open the extension entry in `about:addons` and grant access to `music.youtube.com`
+
+5. **Run the tests (optional):**
+   ```bash
+   npm test
+   ```
 
 ### For Users
 
@@ -179,6 +197,9 @@ The extension is available in the extension stores:
 | Shortcut | Action |
 |--------|------|
 | `ESC` | Exit Focus Mode |
+| `Space` | Play/Pause |
+| `←` / `→` | Seek -10s / +10s |
+| `↑` / `↓` | Volume +5 / -5 |
 | Click on album cover | Play/Pause |
 | Click on progress bar | Seek in song |
 | Click on lyric | Jump to that part |
