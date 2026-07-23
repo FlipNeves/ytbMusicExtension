@@ -1,9 +1,13 @@
 import FocusMode from './features/focus-mode/FocusMode';
+import PlaylistsMenu from './features/sidebar/PlaylistsMenu';
 import './App.css';
 
 function App() {
   return (
-    <FocusMode />
+    <>
+      <FocusMode />
+      <PlaylistsMenu />
+    </>
   );
 }
 

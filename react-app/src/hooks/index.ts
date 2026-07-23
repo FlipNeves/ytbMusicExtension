@@ -15,3 +15,6 @@ export { useTimeState } from './useTimeState';
 
 // Visualizer hook
 export { useVisualizer } from './useVisualizer';
+
+// Sidebar
+export { useAutoCollapseSidebar } from './useAutoCollapseSidebar';
