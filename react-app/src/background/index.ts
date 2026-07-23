@@ -35,10 +35,12 @@ const openYTMWindow = async (url: string = "https://music.youtube.com") => {
   }
 };
 
+const IS_FIREFOX = navigator.userAgent.includes("Firefox");
+
 const createYTMWindow = (url: string) => {
   chrome.windows.create({
     url: url,
-    type: "popup",
+    type: IS_FIREFOX ? "normal" : "popup",
     state: "maximized"
   }, async (window) => {
     if (window?.id) {
