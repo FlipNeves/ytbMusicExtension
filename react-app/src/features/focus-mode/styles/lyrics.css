@@ -6,10 +6,11 @@
     display: none;
     flex-direction: column;
     width: 0;
-    height: 500px;
-    background: rgba(255, 255, 255, 0.05);
+    height: min(64vh, 640px);
+    background: var(--ytm-focus-surface);
+    border: 1px solid var(--ytm-focus-border);
     padding: 24px 0;
-    border-radius: 16px;
+    border-radius: var(--ytm-focus-radius);
     backdrop-filter: blur(10px);
     overflow: hidden;
     transition: width 0.4s ease, padding 0.4s ease, opacity 0.3s ease;
@@ -18,7 +19,7 @@
 
 .focus-lyrics.visible {
     display: flex;
-    width: 350px;
+    width: clamp(280px, 26vw, 480px);
     padding: 24px;
     opacity: 1;
 }
@@ -34,8 +35,8 @@
 .focus-lyrics h3 {
     color: var(--ytm-focus-secondary);
     text-transform: uppercase;
-    font-size: 1.5rem;
-    letter-spacing: 1px;
+    font-size: 1rem;
+    letter-spacing: 1.5px;
     margin: 0;
 }
 
@@ -57,7 +58,7 @@
 
 .lyrics-text {
     color: var(--ytm-focus-primary);
-    font-size: 1.5rem;
+    font-size: clamp(1rem, 2vmin, 1.5rem);
     line-height: 1.8;
     white-space: pre-wrap;
     font-family: var(--ytm-focus-font-family);
@@ -72,7 +73,7 @@
 
 .lyric-line {
     color: rgba(255, 255, 255, 0.4);
-    font-size: 1.5rem;
+    font-size: clamp(1rem, 2vmin, 1.5rem);
     line-height: 1.5;
     font-family: var(--ytm-focus-font-family);
     transition: color 0.3s ease, font-weight 0.3s ease, opacity 0.2s ease;
@@ -96,7 +97,7 @@
 .lyrics-loading,
 .lyrics-error {
     color: var(--ytm-focus-secondary);
-    font-size: 1.5rem;
+    font-size: clamp(1rem, 2vmin, 1.3rem);
     text-align: center;
     padding: 20px 0;
 }
