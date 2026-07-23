@@ -6,27 +6,55 @@
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    width: 200px;
-    min-width: 200px;
-    max-width: 200px;
-    height: 100px;
-    min-height: 100px;
-    max-height: 100px;
-    background: rgba(255, 255, 255, 0.05);
-    padding: 30px;
-    border-radius: 16px;
+    width: clamp(180px, 18vw, 300px);
+    background: var(--ytm-focus-surface);
+    border: 1px solid var(--ytm-focus-border);
+    padding: 24px;
+    border-radius: var(--ytm-focus-radius);
     backdrop-filter: blur(10px);
     animation: fadeIn 1s ease-out 0.3s backwards;
     overflow: hidden;
     transition: transform 0.4s ease;
 }
 
+.focus-next-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
 .focus-next h3 {
     color: var(--ytm-focus-secondary);
     text-transform: uppercase;
-    font-size: 1rem;
+    font-size: 0.85rem;
+    letter-spacing: 1.5px;
+    margin: 0;
+}
+
+/* Gatilho da fila: mesma linguagem dos botões de vidro do modo foco */
+.upnext-more-btn {
+    background: var(--ytm-focus-surface);
+    border: 1px solid var(--ytm-focus-border);
+    border-radius: 14px;
+    color: var(--ytm-focus-secondary);
+    font-size: 0.8rem;
+    font-weight: 700;
     letter-spacing: 1px;
-    margin-bottom: 20px;
+    line-height: 1;
+    padding: 5px 10px;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.upnext-more-btn:hover,
+.upnext-more-btn.active {
+    background: var(--ytm-focus-surface-hover);
+    border-color: var(--ytm-focus-border-hover);
+    color: var(--ytm-focus-primary);
 }
 
 .next-track-card {
@@ -53,16 +81,103 @@
 
 .next-title {
     color: var(--ytm-focus-primary);
-    font-size: 1.4rem;
+    font-size: clamp(1rem, 1.6vmin, 1.3rem);
     font-weight: 500;
     margin-bottom: 4px;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .next-artist {
     color: var(--ytm-focus-secondary);
-    font-size: 1.2rem;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
+    font-size: clamp(0.85rem, 1.4vmin, 1.1rem);
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* ===========================================
+   Fila completa no hover do "···"
+   =========================================== */
+
+.focus-next.expanded {
+    border-color: var(--ytm-focus-border-hover);
+}
+
+.upnext-queue-list {
+    margin-top: 14px;
+    padding-top: 10px;
+    border-top: 1px solid var(--ytm-focus-border);
+    overflow-y: auto;
+    max-height: min(40vh, 420px);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+    animation: fadeIn 0.25s ease-out;
+}
+
+.upnext-queue-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.upnext-queue-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+}
+
+.upnext-queue-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 8px 6px;
+    border-radius: 8px;
+    text-align: left;
+    transition: background-color 0.15s ease;
+}
+
+.upnext-queue-item:hover {
+    background-color: var(--ytm-focus-surface-hover);
+}
+
+.upnext-queue-index {
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.75rem;
+    min-width: 18px;
+    text-align: right;
+    flex-shrink: 0;
+}
+
+.upnext-queue-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+/* Tipografia alinhada com .next-title / .next-artist */
+.upnext-queue-title {
+    color: var(--ytm-focus-primary);
+    font-size: clamp(0.9rem, 1.45vmin, 1.15rem);
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.upnext-queue-artist {
+    color: var(--ytm-focus-secondary);
+    font-size: clamp(0.78rem, 1.25vmin, 1rem);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }

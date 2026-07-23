@@ -13,8 +13,15 @@ interface FocusPlayerProps {
     onVolumeChange: (value: number) => void;
     onLike: () => void;
     onSeek: (time: number) => void;
+    onPlayPause: () => void;
+    onNext: () => void;
+    onPrev: () => void;
+    onArtistClick: () => void;
     showLyrics: boolean;
     onToggleLyrics: () => void;
+    canToggleVideo: boolean;
+    showVideo: boolean;
+    onToggleVideo: () => void;
 }
 
 /**
@@ -31,12 +38,37 @@ const FocusPlayer = ({
     onVolumeChange,
     onLike,
     onSeek,
+    onPlayPause,
+    onNext,
+    onPrev,
+    onArtistClick,
     showLyrics,
     onToggleLyrics,
+    canToggleVideo,
+    showVideo,
+    onToggleVideo,
 }: FocusPlayerProps) => {
     return (
         <div className="focus-player">
             <Visualizer ref={visualizerRef} />
+            {canToggleVideo && (
+                <div className="focus-av-toggle" role="group" aria-label="Alternar entre música e vídeo">
+                    <button
+                        className={`focus-av-btn ${!showVideo ? 'active' : ''}`}
+                        aria-pressed={!showVideo}
+                        onClick={() => showVideo && onToggleVideo()}
+                    >
+                        Música
+                    </button>
+                    <button
+                        className={`focus-av-btn ${showVideo ? 'active' : ''}`}
+                        aria-pressed={showVideo}
+                        onClick={() => !showVideo && onToggleVideo()}
+                    >
+                        Vídeo
+                    </button>
+                </div>
+            )}
             <Player
                 albumArt={songInfo.albumArt || ''}
                 title={songInfo.title || ''}
@@ -49,21 +81,14 @@ const FocusPlayer = ({
                 isPlaying={isPlaying}
                 onLike={onLike}
                 onSeek={onSeek}
-                onPlayPause={() =>
-                    document.querySelector<HTMLElement>('#play-pause-button')?.click()
-                }
+                onPlayPause={onPlayPause}
+                onArtistClick={onArtistClick}
             />
             <Controls
                 isPlaying={isPlaying}
-                onPlayPause={() =>
-                    document.querySelector<HTMLElement>('#play-pause-button')?.click()
-                }
-                onNext={() =>
-                    document.querySelector<HTMLElement>('.next-button')?.click()
-                }
-                onPrev={() =>
-                    document.querySelector<HTMLElement>('.previous-button')?.click()
-                }
+                onPlayPause={onPlayPause}
+                onNext={onNext}
+                onPrev={onPrev}
                 volume={volume}
                 onVolumeChange={onVolumeChange}
                 showLyrics={showLyrics}

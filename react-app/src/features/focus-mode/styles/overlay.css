@@ -59,9 +59,19 @@
     background-position: center;
     opacity: 0.6;
     z-index: -1;
-    filter: blur(2px) brightness(0.7);
+    filter: blur(6px) brightness(0.7) saturate(1.1);
     transition: background-image 1s ease-in-out;
     contain: layout style paint;
+}
+
+/* Vignette leve sobre o backdrop: profundidade e contraste sem esconder a capa */
+#focus-overlay::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 55%, rgba(0, 0, 0, 0.35) 100%);
+    z-index: -1;
+    pointer-events: none;
 }
 
 .focus-close-btn,
@@ -127,4 +137,108 @@
     background: rgba(255, 107, 157, 0.15);
     border-color: rgba(255, 107, 157, 0.4);
     color: #ff6b9d;
+}
+
+/* ===========================================
+   HUD de atalhos de teclado (volume/seek)
+   =========================================== */
+
+.focus-hud {
+    position: absolute;
+    top: 36px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--ytm-focus-surface);
+    border: 1px solid var(--ytm-focus-border);
+    border-radius: 24px;
+    padding: 10px 18px;
+    backdrop-filter: blur(10px);
+    color: var(--ytm-focus-primary);
+    font-family: var(--ytm-focus-font-family);
+    font-size: 0.95rem;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    animation: fadeIn 0.15s ease-out;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.focus-hud svg {
+    width: 20px;
+    height: 20px;
+    fill: currentColor;
+    flex-shrink: 0;
+}
+
+.focus-hud-bar {
+    width: 120px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.focus-hud-bar-fill {
+    height: 100%;
+    background: var(--ytm-focus-primary);
+    border-radius: 2px;
+    transition: width 0.1s linear;
+}
+
+/* ===========================================
+   Modo vídeo: eleva o <video> nativo do YTM
+   para o slot da capa, acima do overlay
+   =========================================== */
+
+/* O transform do player page cria um stacking context próprio, então o z-index
+   do <video> só vale dentro dele: o page sobe inteiro acima do overlay,
+   invisível, e apenas o vídeo é reexibido. */
+body.ytm-focus-video-active ytmusic-player-page {
+    visibility: hidden !important;
+    pointer-events: none !important;
+    z-index: 10000 !important;
+}
+
+body.ytm-focus-video-active ytmusic-player video {
+    visibility: visible !important;
+    position: fixed !important;
+    top: var(--focus-video-top, 20vh) !important;
+    left: var(--focus-video-left, 50%) !important;
+    width: var(--focus-video-width, 60vmin) !important;
+    height: var(--focus-video-height, 60vmin) !important;
+    margin: 0 !important;
+    object-fit: contain;
+    z-index: 10000 !important;
+    border-radius: var(--ytm-focus-radius-sm);
+    /* Cliques atravessam para o slot da capa (play/pause), como na capa normal */
+    pointer-events: none !important;
+}
+
+body.ytm-focus-video-active #focus-overlay .focus-album-art,
+body.ytm-focus-video-active #focus-overlay .focus-album-overlay {
+    visibility: hidden;
+}
+
+body.ytm-focus-video-active #focus-overlay .focus-album-container {
+    box-shadow: none;
+    background: rgba(0, 0, 0, 0.35);
+}
+
+/* Dica discreta de atalhos, ao lado do botão PIX */
+.focus-shortcuts-hint {
+    position: absolute;
+    right: 100px;
+    bottom: 48px;
+    margin: 0;
+    color: rgba(255, 255, 255, 0.4);
+    font-family: var(--ytm-focus-font-family);
+    font-size: 0.7rem;
+    letter-spacing: 0.3px;
+    text-align: right;
+    pointer-events: none;
+    user-select: none;
 }

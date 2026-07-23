@@ -14,13 +14,14 @@ interface PlayerProps {
     onLike?: () => void;
     onSeek?: (time: number) => void;
     onPlayPause?: () => void;
+    onArtistClick?: () => void;
 }
 
 const Player: React.FC<PlayerProps> = ({
     albumArt, title, artist,
     currentTime, totalTime,
     progress, duration,
-    isLiked, isPlaying, onLike, onSeek, onPlayPause
+    isLiked, isPlaying, onLike, onSeek, onPlayPause, onArtistClick
 }) => {
 
     const progressRef = useRef<HTMLDivElement>(null);
@@ -94,7 +95,16 @@ const Player: React.FC<PlayerProps> = ({
 
                 <div className="focus-info">
                     <h1 className="focus-title">{title}</h1>
-                    <h2 className="focus-artist">{artist}</h2>
+                    <h2
+                        className={`focus-artist ${onArtistClick ? 'clickable' : ''}`}
+                        title={onArtistClick ? 'Ir para a página do artista' : undefined}
+                        role={onArtistClick ? 'link' : undefined}
+                        tabIndex={onArtistClick ? 0 : undefined}
+                        onClick={onArtistClick}
+                        onKeyDown={(e) => e.key === 'Enter' && onArtistClick?.()}
+                    >
+                        {artist}
+                    </h2>
                 </div>
 
                 {onLike && (

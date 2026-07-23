@@ -26,8 +26,7 @@
     flex-direction: column;
     align-items: center;
     text-align: center;
-    width: 600px;
-    max-width: 600px;
+    width: min(92vw, calc(var(--ytm-album-size) + 160px));
     animation: slideUp 0.8s var(--ease-out-expo);
 }
 
@@ -38,22 +37,52 @@
     width: 100%;
 }
 
+/* Toggle Música/Vídeo — mesma linguagem do av-toggle nativo do YTM */
+.focus-av-toggle {
+    display: flex;
+    background: var(--ytm-focus-surface);
+    border: 1px solid var(--ytm-focus-border);
+    border-radius: 20px;
+    padding: 3px;
+    margin-bottom: 16px;
+    backdrop-filter: blur(10px);
+}
+
+.focus-av-btn {
+    background: transparent;
+    border: none;
+    color: var(--ytm-focus-secondary);
+    font-family: var(--ytm-focus-font-family);
+    font-size: 0.85rem;
+    font-weight: 500;
+    padding: 6px 20px;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.focus-av-btn:not(.active):hover {
+    color: var(--ytm-focus-primary);
+}
+
+.focus-av-btn.active {
+    background: rgba(255, 255, 255, 0.92);
+    color: #000;
+    font-weight: 600;
+}
+
 .focus-album-container {
     position: relative;
     cursor: pointer;
-    border-radius: 12px;
+    border-radius: var(--ytm-focus-radius-sm);
     overflow: hidden;
     margin-bottom: 20px;
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
     transition: box-shadow 0.3s ease;
     flex-shrink: 0;
     flex-grow: 0;
-    width: 400px;
-    min-width: 400px;
-    max-width: 400px;
-    height: 400px;
-    min-height: 400px;
-    max-height: 400px;
+    width: var(--ytm-album-size);
+    height: var(--ytm-album-size);
     aspect-ratio: 1 / 1;
 }
 
@@ -64,7 +93,7 @@
 .focus-album-art {
     width: 100%;
     height: 100%;
-    border-radius: 12px;
+    border-radius: var(--ytm-focus-radius-sm);
     object-fit: cover;
     display: block;
     transition: transform 0.3s var(--ease-out-expo);
@@ -83,7 +112,7 @@
     justify-content: center;
     opacity: 0;
     transition: opacity 0.3s ease;
-    border-radius: 12px;
+    border-radius: var(--ytm-focus-radius-sm);
 }
 
 .focus-album-container:hover .focus-album-overlay {
@@ -104,8 +133,9 @@
     max-width: calc(100% - 140px);
 }
 
-.focus-info h1 {
-    font-size: 1.8rem;
+.focus-info h1,
+.focus-title {
+    font-size: clamp(1.1rem, 2.4vmin, 2rem);
     color: var(--ytm-focus-primary);
     margin: 0 0 8px 0;
     font-weight: 700;
@@ -114,13 +144,25 @@
     overflow-wrap: break-word;
 }
 
-.focus-info h2 {
-    font-size: 1.1rem;
+.focus-info h2,
+.focus-artist {
+    font-size: clamp(0.9rem, 1.7vmin, 1.3rem);
     color: var(--ytm-focus-secondary);
     margin: 0;
     font-weight: 400;
     word-wrap: break-word;
     overflow-wrap: break-word;
+}
+
+.focus-artist.clickable {
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.focus-artist.clickable:hover {
+    color: var(--ytm-focus-primary);
+    text-decoration: underline;
+    text-underline-offset: 3px;
 }
 
 .focus-song-info {
@@ -155,7 +197,7 @@
     justify-content: center;
     gap: 12px;
     width: 100%;
-    max-width: 400px;
+    max-width: var(--ytm-album-size);
     margin: 0 auto 20px auto;
 }
 

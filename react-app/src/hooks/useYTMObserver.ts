@@ -23,7 +23,7 @@ import { useUpNext } from './useUpNext';
  */
 export const useYTMObserver = () => {
   const songInfo = useSongState();
-  const { volume, isLiked, isPlaying, setVolume, toggleLike, seekTo } = usePlayerControls();
+  const { volume, isLiked, isPlaying, setVolume, toggleLike, seekTo, playPause, next, prev } = usePlayerControls();
   const upNextInfo = useUpNext();
 
   return {
@@ -35,5 +35,8 @@ export const useYTMObserver = () => {
     setVolume,
     toggleLike,
     seekTo,
+    playPause,
+    next,
+    prev,
   };
 };
