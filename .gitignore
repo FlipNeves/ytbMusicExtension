@@ -9,7 +9,11 @@ lerna-debug.log*
 
 node_modules
 dist
+dist-firefox
 dist-ssr
+dist.zip
+dist-firefox.zip
+coverage
 *.local
 
 # Editor directories and files

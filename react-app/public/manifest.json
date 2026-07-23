@@ -1,11 +1,13 @@
 {
     "manifest_version": 3,
     "name": "Focus Music Player",
-    "version": "1.0.2",
+    "version": "1.1.0",
     "description": "Focus Music Player: Experiência imersiva para YouTube Music com modo foco",
+    "minimum_chrome_version": "111",
     "icons": {
         "16": "icon48.png",
         "48": "icon48.png",
+        "96": "icon96.png",
         "128": "icon.png"
     },
     "action": {
@@ -37,24 +39,13 @@
                 "https://music.youtube.com/*"
             ],
             "js": [
-                "assets/injector.js"
-            ]
-        }
-    ],
-    "web_accessible_resources": [
-        {
-            "resources": [
-                "interceptor.js",
-                "icon.png"
+                "interceptor.js"
             ],
-            "matches": [
-                "https://music.youtube.com/*"
-            ]
+            "world": "MAIN",
+            "run_at": "document_idle"
         }
     ],
     "permissions": [
-        "activeTab",
-        "scripting",
         "storage",
         "tabs"
     ]

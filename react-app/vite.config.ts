@@ -9,7 +9,6 @@ export default defineConfig({
       input: {
         background: resolve(__dirname, 'src/background/index.ts'),
         content: resolve(__dirname, 'src/content/index.tsx'),
-        injector: resolve(__dirname, 'src/injector.js'),
       },
       output: {
         entryFileNames: `assets/[name].js`,
