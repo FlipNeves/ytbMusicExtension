@@ -128,9 +128,6 @@ export const useSongState = () => {
 
     // Set up MutationObserver for song changes
     useEffect(() => {
-        const playerBar = document.querySelector(SELECTORS.PLAYER_BAR);
-        if (!playerBar) return;
-
         let mutationTimeout: ReturnType<typeof setTimeout> | null = null;
         const debouncedSync = () => {
             if (mutationTimeout) return;
@@ -141,13 +138,24 @@ export const useSongState = () => {
             }, 250);
         };
 
-        const observer = new MutationObserver(debouncedSync);
-        observer.observe(playerBar, {
-            subtree: true,
-            attributes: true,
-            attributeFilter: ['aria-valuenow', 'aria-pressed', 'src'],
-            childList: true,
-        });
+        // A player bar é recriada pela SPA durante a sessão: o observer
+        // precisa ser re-adquirido, senão as atualizações param
+        let observer: MutationObserver | null = null;
+        let observedBar: Element | null = null;
+        const ensureObserver = () => {
+            const playerBar = document.querySelector(SELECTORS.PLAYER_BAR);
+            if (!playerBar || playerBar === observedBar) return;
+
+            observer?.disconnect();
+            observer = new MutationObserver(debouncedSync);
+            observer.observe(playerBar, {
+                subtree: true,
+                attributes: true,
+                attributeFilter: ['aria-valuenow', 'aria-pressed', 'src'],
+                childList: true,
+            });
+            observedBar = playerBar;
+        };
 
         // Video event handlers
         const handleEnded = () => {
@@ -177,8 +185,12 @@ export const useSongState = () => {
             }
         };
 
+        ensureObserver();
         bindVideo();
-        const videoInterval = setInterval(bindVideo, 3000);
+        const rebindInterval = setInterval(() => {
+            ensureObserver();
+            bindVideo();
+        }, 3000);
 
         // Initial sync (deferred to avoid synchronous setState in effect)
         queueMicrotask(() => {
@@ -187,9 +199,9 @@ export const useSongState = () => {
         });
 
         return () => {
-            observer.disconnect();
+            observer?.disconnect();
             if (mutationTimeout) clearTimeout(mutationTimeout);
-            clearInterval(videoInterval);
+            clearInterval(rebindInterval);
 
             if (boundVideo) {
                 boundVideo.removeEventListener('play', syncSongInfo);

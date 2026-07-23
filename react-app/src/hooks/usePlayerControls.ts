@@ -88,26 +88,34 @@ export const usePlayerControls = (): PlayerControls & {
 
         bindVideoEvents();
 
-        // MutationObserver for like button changes
-        const likeBtn = document.querySelector(SELECTORS.LIKE_BUTTON);
+        // MutationObserver do botão de curtir, re-adquirido se a SPA recriar o botão
         let likeObserver: MutationObserver | null = null;
-        if (likeBtn) {
+        let observedLikeBtn: Element | null = null;
+        const ensureLikeObserver = () => {
+            const likeBtn = document.querySelector(SELECTORS.LIKE_BUTTON);
+            if (!likeBtn || likeBtn === observedLikeBtn) return;
+
+            likeObserver?.disconnect();
             likeObserver = new MutationObserver(() => {
-                const isNowLiked = likeBtn.getAttribute('aria-pressed') === 'true';
-                setIsLiked(isNowLiked);
+                setIsLiked(likeBtn.getAttribute('aria-pressed') === 'true');
             });
             likeObserver.observe(likeBtn, {
                 attributes: true,
                 attributeFilter: ['aria-pressed']
             });
-        }
+            observedLikeBtn = likeBtn;
+            setIsLiked(likeBtn.getAttribute('aria-pressed') === 'true');
+        };
 
-        // Retry binding if video not found initially
+        ensureLikeObserver();
+
+        // Re-vincula vídeo e botão de curtir quando a SPA os recria
         const retryInterval = setInterval(() => {
             const video = document.querySelector(SELECTORS.VIDEO) as HTMLVideoElement;
             if (video && !video.dataset.playerControlsBound) {
                 bindVideoEvents();
             }
+            ensureLikeObserver();
         }, 1000);
 
         return () => {

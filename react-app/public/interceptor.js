@@ -317,40 +317,42 @@ window.addEventListener('message', (event) => {
 // ==========================================
 
 /**
- * Set up MutationObserver for player changes
+ * Observe player changes.
+ *
+ * O YTM recria a player bar e o <video> durante a sessão (SPA/anúncios),
+ * então os vínculos são verificados e re-adquiridos periodicamente —
+ * senão a extração da próxima faixa morre em silêncio.
  */
-function observePlayerChanges() {
+let mutationTimeout = null;
+function debouncedExtract() {
+    if (mutationTimeout) return;
+    mutationTimeout = setTimeout(function () {
+        mutationTimeout = null;
+        extractNextTrackFromPlayer();
+    }, 300);
+}
+
+let playerObserver = null;
+let observedPlayerBar = null;
+
+function ensurePlayerBindings() {
     const playerBar = document.querySelector('ytmusic-player-bar');
-    if (!playerBar) {
-        setTimeout(observePlayerChanges, 500);
-        return;
+    if (playerBar && playerBar !== observedPlayerBar) {
+        if (playerObserver) playerObserver.disconnect();
+        playerObserver = new MutationObserver(debouncedExtract);
+        playerObserver.observe(playerBar, {
+            subtree: true,
+            attributes: true,
+            attributeFilter: ['selected', 'play-button-state'],
+            childList: true
+        });
+        observedPlayerBar = playerBar;
+        extractNextTrackFromPlayer();
     }
 
-    // Initial extraction
-    extractNextTrackFromPlayer();
-
-    // Debounced extraction on mutations
-    let mutationTimeout = null;
-    const debouncedExtract = () => {
-        if (mutationTimeout) return;
-        mutationTimeout = setTimeout(() => {
-            mutationTimeout = null;
-            extractNextTrackFromPlayer();
-        }, 300);
-    };
-
-    const observer = new MutationObserver(debouncedExtract);
-
-    observer.observe(playerBar, {
-        subtree: true,
-        attributes: true,
-        attributeFilter: ['selected', 'play-button-state'],
-        childList: true
-    });
-
-    // Video events
     const video = document.querySelector('video');
-    if (video) {
+    if (video && !video.dataset.ytmInterceptorBound) {
+        video.dataset.ytmInterceptorBound = 'true';
         video.addEventListener('play', debouncedExtract);
         video.addEventListener('loadeddata', debouncedExtract);
     }
@@ -360,4 +362,5 @@ function observePlayerChanges() {
 // Section 6: Initialization
 // ==========================================
 
-observePlayerChanges();
+ensurePlayerBindings();
+setInterval(ensurePlayerBindings, 2000);
