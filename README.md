@@ -86,6 +86,15 @@ The interface adapts to the current song:
 - **Automatic brightness adjustment** to ensure readability
 - **CSS Custom Properties** for theme propagation
 
+### Multiple Sessions
+
+Opening a YouTube Music link no longer destroys your current queue:
+
+- **Confirmation prompt** - when a link arrives while music is playing, choose between opening a new session, replacing the current one, or ignoring the link
+- **One window per session** - each session is a dedicated window with its own player, queue and playback position, preserved with full fidelity
+- **Sessions menu** in the nav bar - switch between sessions, close them, or open a new one (a badge shows how many are open)
+- **Silent fallback** - with nothing playing, links open directly without any prompt, just like before
+
 ---
 
 ## 🏗️ Architecture

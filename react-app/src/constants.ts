@@ -41,6 +41,17 @@ export const MESSAGES = {
     // Up Next
     UP_NEXT: 'A seguir',
 
+    // Sessions
+    SESSION_PROMPT_TITLE: 'Você já tem uma sessão em andamento',
+    SESSION_PROMPT_QUESTION: 'O que deseja fazer com o novo link?',
+    SESSION_NOW_PLAYING: 'está tocando agora.',
+    SESSION_OPEN_NEW: 'Abrir em nova sessão',
+    SESSION_REPLACE: 'Substituir sessão atual',
+    SESSION_CANCEL: 'Cancelar',
+    SESSIONS_TITLE: 'Sessões',
+    SESSION_NEW: 'Nova sessão',
+    SESSION_CURRENT: 'atual',
+
     // PIX Donation
     PIX_TITLE: 'Me pague um café ☕',
     PIX_DESCRIPTION: 'Escaneie o QR Code ou copie o código PIX',
@@ -70,6 +81,12 @@ export const A11Y = {
 
     // Focus Mode
     CLOSE_FOCUS: 'Fechar modo foco',
+
+    // Sessions
+    SESSIONS_MENU: 'Sessões abertas',
+    SESSION_SWITCH: 'Ir para a sessão',
+    SESSION_CLOSE: 'Encerrar sessão',
+    SESSION_CREATE: 'Abrir nova sessão',
 
     // PIX
     OPEN_PIX: 'Abrir modal de doação PIX',

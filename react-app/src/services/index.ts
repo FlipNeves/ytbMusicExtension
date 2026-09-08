@@ -29,6 +29,9 @@ export {
     onApiResponse,
 } from './YTMBridge';
 
+// Multiple listening sessions
+export { sessionService } from './SessionService';
+
 // Lyrics fetching
 export {
     fetchLyrics,

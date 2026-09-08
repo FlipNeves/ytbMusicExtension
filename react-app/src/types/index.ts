@@ -19,5 +19,14 @@ export type { LyricLine, LyricsResult, LyricsApiResponse, LyricsProps } from './
 export type { TimeState, TimeStateListener } from './time';
 export { DEFAULT_TIME_STATE } from './time';
 
+// Session types (type-only: shared by background and content entry points)
+export type {
+    SessionDecision,
+    SessionSummary,
+    SessionPromptRequest,
+    SessionRuntimeMessage,
+    SessionMessageType,
+} from './sessions';
+
 // Common types
 export type { RGB } from './common';

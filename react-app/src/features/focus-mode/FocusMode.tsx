@@ -78,6 +78,10 @@ const FocusMode = () => {
                 );
                 if (isTyping) return;
 
+                // Diálogo modal aberto (ex.: confirmação de sessão): os atalhos
+                // do modo foco cedem para não fechar/agir por baixo dele
+                if (document.querySelector('.session-prompt-backdrop')) return;
+
                 const { volume, currentTimeSec, duration } = stateRef.current;
 
                 switch (e.key) {
