@@ -1,4 +1,4 @@
-# 🎵 Focus Music Player - YouTube Music Extension
+# 🎵 Focus Mode for YouTube Music
 
 <div align="center">
 
@@ -37,19 +37,21 @@ Immersive full-screen interface that eliminates visual distractions:
 
 - **Featured album cover** with an ambient blurred backdrop
 - **Smooth animation** for transitions between songs
-- **Dynamic theme** - interface colors are automatically extracted from the album cover
+- **Dynamic theme** - progress bar, visualizer and highlights take the album's accent color
 - **Fluid layout** - scales from small laptops to ultrawide monitors
-- **Keyboard shortcuts** - `ESC` to exit, `Space` to play/pause, arrows to seek and change volume
+- **Keyboard shortcuts** - `Alt+Shift+F` opens/closes it from any browser window; `ESC` to exit, `Space` to play/pause, arrows to seek and change volume
+- **Remembers your layout** - the lyrics panel and video mode come back as you left them
+- **Optional auto-open** when the music starts (see [Options](#options))
 
 ### Synchronized Lyrics
 
 Integration with the **lrclib.net** API for displaying lyrics:
 
-- **Synchronized lyrics** that follow the music in real-time
+- **Synchronized lyrics** that follow the music in real-time, with sub-second precision (position read from the player itself)
 - **Click to navigate** - jump to any part of the song by clicking on the lyrics
 - **Smart auto-scroll** with user interaction detection
 - **Fallback to plain lyrics** when synchronization is not available
-- **Lyric caching** to avoid repeated requests
+- **Lyric caching** to avoid repeated requests — network failures are not cached, so reopening the panel retries
 
 ### Player Controls
 
@@ -60,7 +62,7 @@ Complete controls without leaving Focus Mode:
 - **Volume** - volume slider control
 - **Progress** - clickable progress bar for seeking
 - **Like** - add songs to favorites
-- **Share** - copy the song link
+- **Share** - copy the link of the song that is playing (`watch?v=…`), from any YouTube Music page
 
 ### Audio Visualizer
 
@@ -68,7 +70,7 @@ Animated bars that react to the music:
 
 - **Audio Context API** for real-time frequency analysis
 - **Animated fallback** when audio cannot be analyzed
-- **Optimized for performance** with throttling at 30 FPS
+- **Optimized for performance** with throttling at 20 FPS
 
 ### "Up Next" Preview
 
@@ -82,18 +84,33 @@ Shows what the next song in the queue will be:
 
 The interface adapts to the current song:
 
-- **Dominant color extraction** from the album cover
-- **Automatic brightness adjustment** to ensure readability
+- **Vibrant accent extraction** - the cover's most present vivid hue (not a muddy average)
+- **Guaranteed contrast** - the accent is lightened until it reaches WCAG AA against the dark UI
+- **Optional tint of YouTube Music** - progress bar, play button and track title can use the accent too
 - **CSS Custom Properties** for theme propagation
 
 ### Multiple Sessions
 
 Opening a YouTube Music link no longer destroys your current queue:
 
-- **Confirmation prompt** - when a link arrives while music is playing, choose between opening a new session, replacing the current one, or ignoring the link
+- **Confirmation prompt** - when a link arrives while music is playing, choose between **playing it next** in the current queue, opening a new session, replacing the current one, or ignoring the link
 - **One window per session** - each session is a dedicated window with its own player, queue and playback position, preserved with full fidelity
 - **Sessions menu** in the nav bar - switch between sessions, close them, or open a new one (a badge shows how many are open)
 - **Silent fallback** - with nothing playing, links open directly without any prompt, just like before
+- **Survives browser restarts** - a session window brought back with `Ctrl+Shift+T` is recognized again; optionally, the last session reopens by itself, paused where it stopped
+
+### Options
+
+Right-click the extension icon → **Options** (or `edge://extensions` → Details → Extension options):
+
+| Option | Default |
+|--------|---------|
+| Open Focus Mode when the music starts | off |
+| Keep the YouTube Music sidebar collapsed (playlists stay in the extension's button) | on |
+| Use the album color in YouTube Music | on |
+| Reopen the last session when the browser starts | off |
+
+The keyboard shortcut can be changed at `edge://extensions/shortcuts` (or `chrome://extensions/shortcuts`).
 
 ---
 
@@ -102,34 +119,39 @@ Opening a YouTube Music link no longer destroys your current queue:
 ```
 ytbMusicExtension/
 ├── react-app/                    # Main application
+│   ├── branding/                 # Icon sources: icon.svg (32 px and up), icon-16.svg (PNGs live in public/)
+│   ├── options.html              # Options page entry
+│   ├── vite.config.ts            # Build: background + options page (ES modules)
+│   ├── vite.content.config.ts    # Build: content script (single IIFE, no shared chunks)
 │   ├── public/
 │   │   ├── manifest.json         # Manifest V3 configuration
-│   │   └── interceptor.js        # Content script that runs in the page context (world: MAIN)
+│   │   ├── _locales/             # Name and description per store language (en, pt_BR)
+│   │   └── interceptor.js        # Runs in the page context (world: MAIN): player API, play next
 │   ├── scripts/
 │   │   └── build-firefox.mjs     # Generates the Firefox build (dist-firefox/)
 │   └── src/
+│       ├── background/           # Service worker: sessions, shortcut, reopen on startup
+│       ├── content/              # Content script entry
+│       ├── options/              # Options page
 │       ├── features/
-│       │   └── focus-mode/       # Focus Mode components
-│       │       ├── FocusMode.tsx     # Main component
-│       │       ├── Player.tsx        # Music player
-│       │       ├── Lyrics.tsx        # Lyrics display
-│       │       ├── Controls.tsx      # Media controls
-│       │       ├── Visualizer.tsx    # Audio visualizer
-│       │       ├── UpNext.tsx        # Next song
-│       │       └── styles/           # Modular CSS styles
-│       ├── hooks/
-│       │   ├── useYTMObserver.ts     # Facade for YTM observation
-│       │   ├── useSongState.ts       # Current song state
-│       │   ├── usePlayerControls.ts  # Player controls
-│       │   ├── useUpNext.ts          # Next song in queue
-│       │   └── useVisualizer.ts      # Audio visualizer
+│       │   ├── focus-mode/       # Focus Mode components and modular CSS
+│       │   ├── sessions/         # Link prompt and sessions menu
+│       │   └── sidebar/          # Playlists popover
+│       ├── hooks/                # Song/time state, controls, preferences, visualizer
 │       ├── services/
-│       │   ├── LyricsService.ts      # Lyrics fetching
-│       │   ├── ColorService.ts       # Color extraction
-│       │   ├── TimeService.ts        # Time formatting
-│       │   └── YTMBridge.ts          # Communication with YTM
-│       └── types/                    # TypeScript definitions
+│       │   ├── YTMBridge.ts          # Messages with interceptor.js
+│       │   ├── TimeStateService.ts   # Single source of time/duration
+│       │   ├── DomWatcher.ts         # One MutationObserver shared by all injected UI
+│       │   ├── YTMHealth.ts          # Console warning when YTM changes a selector we rely on
+│       │   ├── PreferencesService.ts # chrome.storage preferences
+│       │   ├── LyricsService.ts      # Lyrics fetching and LRC parsing
+│       │   ├── ColorService.ts       # Accent color extraction
+│       │   └── ...
+│       ├── constants.ts          # Messages and every YouTube Music selector
+│       └── types/                # TypeScript definitions
 ```
+
+The content script is built separately as a single IIFE: scripts declared in the manifest cannot use `import`, so it never shares chunks with the background or the options page.
 
 ---
 
@@ -179,7 +201,9 @@ ytbMusicExtension/
    - Go to `about:debugging#/runtime/this-firefox`
    - Click on **Load Temporary Add-on...**
    - Select the `react-app/dist-firefox/manifest.json` file
-   - Note: in Firefox, MV3 host permissions are opt-in — open the extension entry in `about:addons` and grant access to `music.youtube.com`
+   - Note: in Firefox, MV3 host permissions are opt-in — open the extension entry in `about:addons` and grant access to `music.youtube.com` (sessions and the shortcut depend on it)
+
+   **Permissions:** only `storage` plus access to `music.youtube.com` — no "read your browsing history" warning.
 
 5. **Run the tests (optional):**
    ```bash
@@ -205,6 +229,7 @@ The extension is available in the extension stores:
 
 | Shortcut | Action |
 |--------|------|
+| `Alt+Shift+F` | Open/close Focus Mode (works from any browser window) |
 | `ESC` | Exit Focus Mode |
 | `Space` | Play/Pause |
 | `←` / `→` | Seek -10s / +10s |

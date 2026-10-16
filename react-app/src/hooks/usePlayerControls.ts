@@ -6,17 +6,9 @@
 
 import { useCallback, useState, useEffect } from 'react';
 import type { PlayerControls } from '../types';
+import { SELECTORS } from '../constants';
 import { setVolume as bridgeSetVolume, seekTo as bridgeSeekTo } from '../services';
-
-/** DOM Selectors for YouTube Music controls */
-const SELECTORS = {
-    PLAY_PAUSE: '#play-pause-button',
-    NEXT: '.next-button',
-    PREVIOUS: '.previous-button',
-    VOLUME_SLIDER: 'ytmusic-player-bar #volume-slider',
-    LIKE_BUTTON: 'ytmusic-player-bar ytmusic-like-button-renderer #button-shape-like button',
-    VIDEO: 'video',
-} as const;
+import { watchDom } from '../services/DomWatcher';
 
 /**
  * Hook providing player control functions
@@ -86,8 +78,6 @@ export const usePlayerControls = (): PlayerControls & {
             }
         };
 
-        bindVideoEvents();
-
         // MutationObserver do botão de curtir, re-adquirido se a SPA recriar o botão
         let likeObserver: MutationObserver | null = null;
         let observedLikeBtn: Element | null = null;
@@ -107,19 +97,14 @@ export const usePlayerControls = (): PlayerControls & {
             setIsLiked(likeBtn.getAttribute('aria-pressed') === 'true');
         };
 
-        ensureLikeObserver();
-
         // Re-vincula vídeo e botão de curtir quando a SPA os recria
-        const retryInterval = setInterval(() => {
-            const video = document.querySelector(SELECTORS.VIDEO) as HTMLVideoElement;
-            if (video && !video.dataset.playerControlsBound) {
-                bindVideoEvents();
-            }
+        const stopWatching = watchDom(() => {
+            bindVideoEvents();
             ensureLikeObserver();
-        }, 1000);
+        });
 
         return () => {
-            clearInterval(retryInterval);
+            stopWatching();
             likeObserver?.disconnect();
 
             if (boundVideo) {

@@ -1,15 +1,18 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import './sidebar.css';
+import { SELECTORS } from '../../constants';
 import { getSidebarPlaylists, openSidebarPlaylist, type SidebarPlaylist } from '../../services/PlaylistService';
+import { watchDom } from '../../services/DomWatcher';
 import { useAutoCollapseSidebar } from '../../hooks/useAutoCollapseSidebar';
+import { usePreferences } from '../../hooks/usePreferences';
 
 /**
  * PlaylistsMenu - Acesso minimalista às playlists com o menu lateral recolhido
  *
  * Injeta um ícone na nav bar do YTM; ao passar o mouse (ou clicar), abre um
  * popover com as playlists lidas do guide. Substitui a necessidade de expandir
- * o menu lateral, que é mantido sempre recolhido por useAutoCollapseSidebar.
+ * o menu lateral, que fica recolhido por useAutoCollapseSidebar (preferência).
  */
 const PlaylistsMenu: React.FC = () => {
     const [target, setTarget] = useState<Element | null>(null);
@@ -18,17 +21,18 @@ const PlaylistsMenu: React.FC = () => {
     const [position, setPosition] = useState<{ top: number; left: number } | null>(null);
     const buttonRef = useRef<HTMLButtonElement>(null);
     const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const { preferences } = usePreferences();
 
-    useAutoCollapseSidebar();
+    useAutoCollapseSidebar(preferences.collapseSidebar);
 
     useEffect(() => {
         // Mesmo padrão dos demais botões injetados: recria o container se a SPA re-renderizar
         const ensureContainer = () => {
             // Posição preferida: no rail recolhido, abaixo de "Biblioteca"
-            // (#mini-guide só existe com o menu recolhido — que a extensão garante)
+            // (#mini-guide só existe com o menu recolhido)
             const miniItems =
-                document.querySelector('#mini-guide-renderer ytmusic-guide-section-renderer[is-primary] #items') ||
-                document.querySelector('#mini-guide-renderer #items');
+                document.querySelector(SELECTORS.MINI_GUIDE_PRIMARY_ITEMS) ||
+                document.querySelector(SELECTORS.MINI_GUIDE_ITEMS);
 
             const existing = document.getElementById('btn-playlists-menu-container');
             if (existing?.isConnected) {
@@ -56,17 +60,14 @@ const PlaylistsMenu: React.FC = () => {
                 setTarget(container);
                 return;
             }
-            const leftContent = document.querySelector('ytmusic-nav-bar .left-content');
+            const leftContent = document.querySelector(SELECTORS.NAV_LEFT);
             if (leftContent) {
                 leftContent.insertBefore(container, leftContent.children[1] ?? null);
                 setTarget(container);
             }
         };
 
-        ensureContainer();
-        const interval = setInterval(ensureContainer, 1000);
-
-        return () => clearInterval(interval);
+        return watchDom(ensureContainer);
     }, []);
 
     useEffect(() => {

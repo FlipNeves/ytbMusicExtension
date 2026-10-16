@@ -1,26 +1,41 @@
 {
     "manifest_version": 3,
-    "name": "Focus Music Player",
-    "version": "1.1.0",
-    "description": "Focus Music Player: Experiência imersiva para YouTube Music com modo foco",
+    "name": "__MSG_extName__",
+    "version": "1.2.0",
+    "description": "__MSG_extDescription__",
+    "default_locale": "en",
     "minimum_chrome_version": "111",
     "icons": {
-        "16": "icon48.png",
+        "16": "icon16.png",
+        "32": "icon32.png",
         "48": "icon48.png",
         "96": "icon96.png",
-        "128": "icon.png"
+        "128": "icon128.png"
     },
     "action": {
-        "default_title": "Abrir YouTube Music",
+        "default_title": "__MSG_actionTitle__",
         "default_icon": {
-            "16": "icon48.png",
+            "16": "icon16.png",
+            "32": "icon32.png",
             "48": "icon48.png",
-            "128": "icon.png"
+            "128": "icon128.png"
         }
     },
     "background": {
         "service_worker": "assets/background.js",
         "type": "module"
+    },
+    "options_ui": {
+        "page": "options.html",
+        "open_in_tab": false
+    },
+    "commands": {
+        "toggle-focus-mode": {
+            "suggested_key": {
+                "default": "Alt+Shift+F"
+            },
+            "description": "__MSG_toggleFocusCommand__"
+        }
     },
     "content_scripts": [
         {
@@ -46,7 +61,9 @@
         }
     ],
     "permissions": [
-        "storage",
-        "tabs"
+        "storage"
+    ],
+    "host_permissions": [
+        "https://music.youtube.com/*"
     ]
 }

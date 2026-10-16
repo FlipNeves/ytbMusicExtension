@@ -4,16 +4,33 @@ import type { SessionDecision, SessionPromptRequest } from '../../types/sessions
 import { MESSAGES } from '../../constants';
 import './sessions.css';
 
+const NOTICE_DURATION_MS = 4000;
+
 /**
  * Diálogo de confirmação exibido quando um link externo chega com música
- * tocando: abrir em nova sessão, substituir a atual ou ignorar o link.
+ * tocando: tocar a seguir nesta sessão, abrir em nova sessão, substituir a
+ * atual ou ignorar o link. Também mostra avisos curtos (ex.: falha na fila).
  */
 const SessionPrompt: React.FC = () => {
     const [request, setRequest] = useState<SessionPromptRequest | null>(null);
+    const [notice, setNotice] = useState<string | null>(null);
     const dialogRef = useRef<HTMLDivElement>(null);
     const primaryRef = useRef<HTMLButtonElement>(null);
 
     useEffect(() => sessionService.subscribe(setRequest), []);
+
+    useEffect(() => {
+        let timeout: ReturnType<typeof setTimeout> | null = null;
+        const unsubscribe = sessionService.onNotice((message) => {
+            setNotice(message);
+            if (timeout) clearTimeout(timeout);
+            timeout = setTimeout(() => setNotice(null), NOTICE_DURATION_MS);
+        });
+        return () => {
+            unsubscribe();
+            if (timeout) clearTimeout(timeout);
+        };
+    }, []);
 
     useEffect(() => {
         if (request) {
@@ -22,7 +39,7 @@ const SessionPrompt: React.FC = () => {
     }, [request]);
 
     if (!request) {
-        return null;
+        return notice ? <div className="session-notice" role="status">{notice}</div> : null;
     }
 
     const decide = (decision: SessionDecision) => sessionService.resolvePrompt(decision);
@@ -76,9 +93,18 @@ const SessionPrompt: React.FC = () => {
                     {MESSAGES.SESSION_PROMPT_QUESTION}
                 </p>
                 <div className="session-prompt-actions">
+                    {request.canQueue && (
+                        <button
+                            ref={primaryRef}
+                            className="session-btn session-btn-primary"
+                            onClick={() => decide('queue')}
+                        >
+                            {MESSAGES.SESSION_PLAY_NEXT}
+                        </button>
+                    )}
                     <button
-                        ref={primaryRef}
-                        className="session-btn session-btn-primary"
+                        ref={request.canQueue ? undefined : primaryRef}
+                        className={`session-btn ${request.canQueue ? '' : 'session-btn-primary'}`}
                         onClick={() => decide('new')}
                     >
                         {MESSAGES.SESSION_OPEN_NEW}

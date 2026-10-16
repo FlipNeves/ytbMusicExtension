@@ -1,12 +1,26 @@
 /* ===========================================
    Focus Mode CSS Variables (Design Tokens)
+
+   Fontes em px (ou clamp com vmin), nunca em rem: o YouTube Music define
+   html { font-size: 10px }, então 1rem no CSS injetado vale 10px.
+   Os tamanhos são os originais (antigos valores em rem x 10px): os usuários
+   preferem o modo foco compacto. Só o HUD de atalhos (volume/seek) é maior.
    =========================================== */
 
 :root {
+    /* Marca: o vermelho do ícone (botões injetados, sessões, opções). */
+    --fmp-brand: #e02238;        /* preenchimentos com texto branco (4,7:1) e contornos */
+    --fmp-brand-strong: #c81b31; /* hover dos preenchimentos */
+    --fmp-brand-text: #ff4d5e;   /* texto e ícones sobre fundo escuro (5,8:1); espelhada em BRAND_COLOR */
+    --fmp-on-brand: #ffffff;
+    --fmp-danger: #ff5a52;
+
     /* Cores */
     --ytm-focus-primary: #ffffff;
     --ytm-focus-secondary: rgba(255, 255, 255, 0.72);
-    --ytm-focus-accent: #f0eded;
+    /* Destaque do modo foco: cor viva da capa, com contraste garantido
+       (ColorService). Até a capa carregar, a cor da marca. */
+    --ytm-focus-accent: var(--fmp-brand-text);
     --ytm-focus-bg: #000000;
 
     /* Superfícies (vidro fosco) */
@@ -25,4 +39,6 @@
 
     /* Dimensionamento fluido: escala com a viewport em qualquer resolução */
     --ytm-album-size: clamp(200px, 38vmin, 520px);
+    /* Letra da música: o antigo clamp(1rem, 2vmin, 1.5rem) valendo 10px por rem no YTM */
+    --ytm-lyrics-size: clamp(10px, 2vmin, 15px);
 }

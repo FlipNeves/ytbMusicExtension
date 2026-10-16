@@ -1,17 +1,17 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { sessionService } from '../../services/SessionService';
+import { watchDom } from '../../services/DomWatcher';
 import type { SessionSummary } from '../../types/sessions';
-import { A11Y, MESSAGES, TIMING } from '../../constants';
+import { A11Y, MESSAGES, SELECTORS } from '../../constants';
 import './sessions.css';
 
 const CONTAINER_ID = 'ytm-sessions-menu-container';
-const REFRESH_INTERVAL = 4000;
 
 /**
  * Botão na nav bar do YTM com a lista de sessões abertas.
  * Segue o padrão de portal de BrowserNavButtons: o container é recriado
- * pelo intervalo caso a SPA destrua a nav bar.
+ * caso a SPA destrua a nav bar.
  */
 const SessionsMenu: React.FC = () => {
     const [target, setTarget] = useState<Element | null>(null);
@@ -38,30 +38,34 @@ const SessionsMenu: React.FC = () => {
                 return;
             }
 
-            const leftContent = document.querySelector('ytmusic-nav-bar .left-content')
-                || document.querySelector('ytmusic-nav-bar');
+            const leftContent = document.querySelector(SELECTORS.NAV_LEFT)
+                || document.querySelector(SELECTORS.NAV_BAR);
             if (leftContent) {
                 leftContent.appendChild(container);
                 setTarget(container);
             }
         };
 
-        ensureContainer();
-        const interval = setInterval(ensureContainer, TIMING.RETRY_INTERVAL);
-        return () => clearInterval(interval);
+        return watchDom(ensureContainer);
     }, []);
 
     const refresh = useCallback(() => {
         sessionService.getSessions().then(setSessions);
     }, []);
 
-    // Mantém o contador atualizado; pausa quando a aba está oculta
+    // O background avisa quando o registro de sessões muda; a aba que volta a
+    // ficar visível também atualiza (pode ter perdido avisos enquanto dormia)
     useEffect(() => {
         refresh();
-        const interval = setInterval(() => {
+        const unsubscribe = sessionService.onSessionsChanged(refresh);
+        const handleVisibility = () => {
             if (!document.hidden) refresh();
-        }, REFRESH_INTERVAL);
-        return () => clearInterval(interval);
+        };
+        document.addEventListener('visibilitychange', handleVisibility);
+        return () => {
+            unsubscribe();
+            document.removeEventListener('visibilitychange', handleVisibility);
+        };
     }, [refresh]);
 
     // Fecha ao clicar fora ou com Esc

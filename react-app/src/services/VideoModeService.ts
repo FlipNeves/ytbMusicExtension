@@ -8,9 +8,11 @@
  * restaurar a posição via seek.
  */
 
+import { SELECTORS } from '../constants';
+
 export type SwitchMethod = 'av-toggle' | 'queue' | null;
 
-const getAvToggle = (): Element | null => document.querySelector('ytmusic-av-toggle');
+const getAvToggle = (): Element | null => document.querySelector(SELECTORS.AV_TOGGLE);
 
 /** A faixa atual tem versão em vídeo disponível? */
 export const hasVideoCounterpart = (): boolean => {
@@ -34,11 +36,11 @@ export const getAvSelection = (): 'video' | 'audio' | null => {
  * cobrem o intervalo até o stream carregar.
  */
 export const isVideoPlaybackActive = (): boolean => {
-    const video = document.querySelector<HTMLVideoElement>('ytmusic-player video');
+    const video = document.querySelector<HTMLVideoElement>(SELECTORS.PLAYER_VIDEO);
     if (video && video.videoWidth > 0) return true;
 
-    const player = document.querySelector('ytmusic-player');
-    const songImage = document.querySelector('ytmusic-player #song-image');
+    const player = document.querySelector(SELECTORS.PLAYER);
+    const songImage = document.querySelector(SELECTORS.SONG_IMAGE);
     if (
         player?.hasAttribute('video-mode') &&
         songImage &&
@@ -62,18 +64,18 @@ const isVideoThumb = (item: Element): boolean => {
 
 /** Encontra na fila o counterpart (música↔vídeo) da faixa atual */
 const findQueueCounterpart = (wantVideo: boolean): HTMLElement | null => {
-    const items = Array.from(document.querySelectorAll<HTMLElement>('ytmusic-player-queue-item'));
+    const items = Array.from(document.querySelectorAll<HTMLElement>(SELECTORS.QUEUE_ITEM));
     const current = items.find((item) => item.hasAttribute('selected'));
     if (!current) return null;
 
-    const title = current.querySelector('.song-title, .title')?.textContent?.trim().toLowerCase();
+    const title = current.querySelector(SELECTORS.QUEUE_ITEM_TITLE)?.textContent?.trim().toLowerCase();
     if (!title) return null;
 
     return (
         items.find(
             (item) =>
                 item !== current &&
-                item.querySelector('.song-title, .title')?.textContent?.trim().toLowerCase() === title &&
+                item.querySelector(SELECTORS.QUEUE_ITEM_TITLE)?.textContent?.trim().toLowerCase() === title &&
                 isVideoThumb(item) === wantVideo
         ) || null
     );
@@ -111,7 +113,7 @@ export const switchPlayback = (mode: 'video' | 'audio'): SwitchMethod => {
 
     const counterpart = findQueueCounterpart(mode === 'video');
     if (counterpart) {
-        (counterpart.querySelector<HTMLElement>('ytmusic-play-button-renderer') || counterpart).click();
+        (counterpart.querySelector<HTMLElement>(SELECTORS.QUEUE_ITEM_PLAY) || counterpart).click();
         return 'queue';
     }
     return null;
@@ -119,12 +121,12 @@ export const switchPlayback = (mode: 'video' | 'audio'): SwitchMethod => {
 
 /** O player page precisa estar aberto para o <video> renderizar */
 export const isPlayerPageOpen = (): boolean =>
-    document.querySelector('ytmusic-app-layout')?.hasAttribute('player-page-open') ?? false;
+    document.querySelector(SELECTORS.APP_LAYOUT)?.hasAttribute('player-page-open') ?? false;
 
 export const setPlayerPageOpen = (open: boolean): void => {
     if (isPlayerPageOpen() === open) return;
     const toggle =
-        document.querySelector<HTMLElement>('ytmusic-player-bar .toggle-player-page-button') ||
-        document.querySelector<HTMLElement>('ytmusic-player-bar');
+        document.querySelector<HTMLElement>(SELECTORS.PLAYER_PAGE_TOGGLE) ||
+        document.querySelector<HTMLElement>(SELECTORS.PLAYER_BAR);
     toggle?.click();
 };

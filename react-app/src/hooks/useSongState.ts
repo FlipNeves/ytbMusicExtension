@@ -1,36 +1,32 @@
 /**
  * useSongState - Hook for current song information
- * 
+ *
  * Single Responsibility: Track and provide current song metadata
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import type { SongInfo } from '../types';
 import { DEFAULT_SONG_INFO } from '../types';
+import { SELECTORS } from '../constants';
 import {
     extractAndApplyTheme,
     setAlbumArtVariable,
     timeStateService,
+    onPlayerState,
 } from '../services';
-
-/** DOM Selectors for song information */
-const SELECTORS = {
-    TITLE: '.content-info-wrapper .title',
-    ARTIST: '.content-info-wrapper .byline',
-    ALBUM_ART: '.thumbnail-image-wrapper img',
-    PLAYER_BAR: 'ytmusic-player-bar',
-    VIDEO: 'video',
-} as const;
+import { watchDom } from '../services/DomWatcher';
+import { checkPlayerSelectors } from '../services/YTMHealth';
 
 /**
  * Hook to track and provide current song information
- * 
+ *
  * Observes YouTube Music DOM for song changes and syncs metadata
  */
 export const useSongState = () => {
     const [songInfo, setSongInfo] = useState<SongInfo>(DEFAULT_SONG_INFO);
     const lastAlbumArtRef = useRef('');
     const lastSongIdRef = useRef('');
+    const checkedSongRef = useRef('');
 
     /**
      * Sync song metadata from DOM (async part for album art)
@@ -78,6 +74,12 @@ export const useSongState = () => {
             lastSongIdRef.current = songId;
         }
 
+        // Com uma música carregada, confere (uma vez por faixa) se o DOM de que dependemos ainda existe
+        if (titleEl?.textContent && checkedSongRef.current !== songId) {
+            checkedSongRef.current = songId;
+            checkPlayerSelectors();
+        }
+
         // Handle album art
         const artEl = document.querySelector<HTMLImageElement>(SELECTORS.ALBUM_ART);
         let newSrc = '';
@@ -123,7 +125,15 @@ export const useSongState = () => {
             }));
         });
 
-        return unsubscribe;
+        // Posição fracionada direto do player (sincronia fina das letras)
+        const unsubscribePlayer = onPlayerState((snapshot) => {
+            timeStateService.setPreciseTime(snapshot.currentTime);
+        });
+
+        return () => {
+            unsubscribe();
+            unsubscribePlayer();
+        };
     }, []);
 
     // Set up MutationObserver for song changes
@@ -173,7 +183,7 @@ export const useSongState = () => {
 
         let boundVideo: HTMLVideoElement | null = null;
         const bindVideo = () => {
-            const video = document.querySelector(SELECTORS.VIDEO) as HTMLVideoElement;
+            const video = document.querySelector<HTMLVideoElement>(SELECTORS.VIDEO);
             if (video && !video.dataset.focusModeBound) {
                 video.dataset.focusModeBound = 'true';
                 boundVideo = video;
@@ -185,12 +195,10 @@ export const useSongState = () => {
             }
         };
 
-        ensureObserver();
-        bindVideo();
-        const rebindInterval = setInterval(() => {
+        const stopWatching = watchDom(() => {
             ensureObserver();
             bindVideo();
-        }, 3000);
+        });
 
         // Initial sync (deferred to avoid synchronous setState in effect)
         queueMicrotask(() => {
@@ -201,7 +209,7 @@ export const useSongState = () => {
         return () => {
             observer?.disconnect();
             if (mutationTimeout) clearTimeout(mutationTimeout);
-            clearInterval(rebindInterval);
+            stopWatching();
 
             if (boundVideo) {
                 boundVideo.removeEventListener('play', syncSongInfo);

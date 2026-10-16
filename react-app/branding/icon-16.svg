@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- Versão do icon.svg para 16 px: sem a nota (não cabe nessa resolução) e com o play maior. -->
+  <defs>
+    <linearGradient id="red" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f3435a"/>
+      <stop offset="1" stop-color="#e5263e"/>
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="4" fill="#202529"/>
+  <g fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 40V26a14 14 0 0 1 14-14h14"/>
+    <path d="M88 12h14a14 14 0 0 1 14 14v14"/>
+    <path d="M116 88v14a14 14 0 0 1-14 14H88"/>
+    <path d="M40 116H26a14 14 0 0 1-14-14V88"/>
+  </g>
+  <g transform="translate(66 64) scale(1.15) translate(-64 -64)">
+    <path d="M40 37v54l47-27z" fill="url(#red)" stroke="url(#red)" stroke-width="7" stroke-linejoin="round"/>
+  </g>
+</svg>

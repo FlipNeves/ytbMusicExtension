@@ -1,0 +1,14 @@
+{
+    "extName": {
+        "message": "Focus Mode for YouTube Music"
+    },
+    "extDescription": {
+        "message": "Modo foco em tela cheia para o YouTube Music: capa grande, letra sincronizada e controles. Ideal para a segunda tela."
+    },
+    "actionTitle": {
+        "message": "Abrir YouTube Music"
+    },
+    "toggleFocusCommand": {
+        "message": "Abrir/fechar o modo foco"
+    }
+}

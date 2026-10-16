@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import type { LyricsProps, LyricLine } from '../../types';
-import { fetchLyrics, isLyricsInCache } from '../../services';
+import { fetchLyrics, isLyricsInCache, LyricsUnavailableError } from '../../services';
+import { MESSAGES } from '../../constants';
 import LyricsSkeleton from './LyricsSkeleton';
 
 /**
@@ -51,11 +52,12 @@ const Lyrics: React.FC<LyricsProps> = ({ title, artist, isVisible, currentTime =
                 } else if (result.plainLyrics) {
                     setPlainLyrics(result.plainLyrics);
                 } else {
-                    setError('Letra não encontrada');
+                    setError(MESSAGES.LYRICS_NOT_FOUND);
                 }
             } catch (err) {
                 if (err instanceof Error && err.name === 'AbortError') return;
-                setError('Letra não encontrada');
+                // Falha de rede não é "sem letra": não foi para o cache, reabrir o painel tenta de novo
+                setError(err instanceof LyricsUnavailableError ? MESSAGES.LYRICS_FAILED : MESSAGES.LYRICS_NOT_FOUND);
             } finally {
                 if (!abortController.signal.aborted) {
                     setLoading(false);

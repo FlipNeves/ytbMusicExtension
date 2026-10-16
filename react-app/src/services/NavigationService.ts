@@ -2,6 +2,8 @@
  * NavigationService - Navegação para páginas do YouTube Music
  */
 
+import { SELECTORS } from '../constants';
+
 /**
  * Abre a página do artista da música atual.
  *
@@ -10,9 +12,7 @@
  * Fallback: busca pelo nome do artista.
  */
 export const openCurrentArtistPage = (artistName: string): void => {
-    const anchors = document.querySelectorAll<HTMLAnchorElement>(
-        'ytmusic-player-bar .content-info-wrapper .byline a'
-    );
+    const anchors = document.querySelectorAll<HTMLAnchorElement>(SELECTORS.ARTIST_LINKS);
 
     for (const anchor of anchors) {
         const href = anchor.getAttribute('href') || '';

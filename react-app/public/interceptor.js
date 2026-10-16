@@ -60,6 +60,17 @@ function isVideoContent(item) {
     }
 }
 
+/**
+ * Warn once in the console when a YTM internal the extension relies on is
+ * gone — YTM changes without notice, and silent failures are hard to trace.
+ */
+const warnedKeys = new Set();
+function warnOnce(key, message) {
+    if (warnedKeys.has(key)) return;
+    warnedKeys.add(key);
+    console.warn('[Focus Mode for YouTube Music] O YouTube Music mudou: ' + message + '. Recursos que dependem disso podem não funcionar.');
+}
+
 // ==========================================
 // Section 3: Track Extraction
 // ==========================================
@@ -241,6 +252,143 @@ function extractNextTrackFromPlayer() {
     }
 }
 
+/**
+ * Get the id of the video loaded in the player.
+ * #movie_player is the YouTube player API; ytmusic-player-bar.playerApi is
+ * only a fallback — it is undefined on current YTM builds.
+ */
+function getCurrentVideoId() {
+    const sources = [
+        () => document.getElementById('movie_player')?.getVideoData?.()?.video_id,
+        () => document.querySelector('ytmusic-player-bar')?.playerApi?.getVideoData?.()?.video_id,
+    ];
+
+    for (const source of sources) {
+        try {
+            const videoId = source();
+            if (videoId) return videoId;
+        } catch (e) {
+            // Try the next source
+        }
+    }
+
+    if (document.getElementById('movie_player')) {
+        warnOnce('video-id', 'o player não informa o id da música (getVideoData)');
+    }
+    return null;
+}
+
+// ==========================================
+// Section 3b: Player State & Play Next
+// ==========================================
+
+/**
+ * Publish track position/duration straight from the player (#movie_player):
+ * fractional seconds, relative to the track — finer than the player bar
+ * slider (whole seconds) and immune to the MediaSource shared by gapless playback.
+ */
+function postPlayerState() {
+    const player = document.getElementById('movie_player');
+    if (!player) return;
+    if (typeof player.getCurrentTime !== 'function' || typeof player.getDuration !== 'function') {
+        warnOnce('player-time', 'o player não expõe getCurrentTime/getDuration');
+        return;
+    }
+
+    try {
+        const data = player.getVideoData?.() || {};
+        window.postMessage({
+            type: 'YTM_PLAYER_STATE',
+            currentTime: player.getCurrentTime(),
+            duration: player.getDuration(),
+            videoId: data.video_id || null,
+            playlistId: player.getPlaylistId?.() || null,
+        }, '*');
+    } catch (e) {
+        // Player switching tracks
+    }
+}
+
+/** YTM command that inserts a track (or playlist) right after the current one */
+function buildPlayNextEndpoint(target) {
+    const watchEndpoint = target.videoId ? { videoId: target.videoId } : { playlistId: target.playlistId };
+    const queueTarget = Object.assign({}, watchEndpoint, { onEmptyQueue: { watchEndpoint: watchEndpoint } });
+    const toastText = target.videoId ? 'A música será tocada em seguida' : 'A playlist será tocada em seguida';
+
+    return {
+        queueAddEndpoint: {
+            queueTarget: queueTarget,
+            queueInsertPosition: 'INSERT_AFTER_CURRENT_VIDEO',
+            commands: [{
+                addToToastAction: {
+                    item: { notificationTextRenderer: { successResponseText: { runs: [{ text: toastText }] } } },
+                },
+            }],
+        },
+    };
+}
+
+function getQueueItemData(item) {
+    return item && (item.data || (item.__data && item.__data.data)) || null;
+}
+
+/** Did the queue change the way "play next" should have changed it? */
+function playNextApplied(target, lengthBefore) {
+    const items = Array.from(document.querySelectorAll('ytmusic-player-queue-item'));
+    if (!target.videoId) return items.length > lengthBefore;
+
+    const current = items.findIndex(function (item) { return item.hasAttribute('selected'); });
+    const next = getQueueItemData(items[current + 1]);
+    return !!next && next.videoId === target.videoId;
+}
+
+/**
+ * Run the command the way a click on YTM's own "Tocar a seguir" menu item
+ * does: YTM ignores the same command when called directly from outside.
+ */
+function runFromMenuItem(endpoint) {
+    const app = document.querySelector('ytmusic-app');
+    if (!app || !customElements.get('ytmusic-menu-service-item-renderer')) return false;
+
+    const item = document.createElement('ytmusic-menu-service-item-renderer');
+    item.style.display = 'none';
+    app.appendChild(item);
+    item.data = { text: { runs: [{ text: 'Tocar a seguir' }] }, serviceEndpoint: endpoint };
+    item.click();
+    setTimeout(function () { item.remove(); }, 1000);
+    return true;
+}
+
+function runWithResolveCommand(endpoint) {
+    const app = document.querySelector('ytmusic-app');
+    if (!app || typeof app.resolveCommand !== 'function') return false;
+    app.resolveCommand(endpoint);
+    return true;
+}
+
+const wait = function (ms) { return new Promise(function (resolve) { setTimeout(resolve, ms); }); };
+
+async function playNext(target) {
+    const endpoint = buildPlayNextEndpoint(target);
+    const lengthBefore = document.querySelectorAll('ytmusic-player-queue-item').length;
+
+    for (const run of [runFromMenuItem, runWithResolveCommand]) {
+        try {
+            if (!run(endpoint)) continue;
+        } catch (e) {
+            continue;
+        }
+        // The queue is filled from a network request: give it time
+        for (let i = 0; i < 8; i++) {
+            await wait(400);
+            if (playNextApplied(target, lengthBefore)) return true;
+        }
+    }
+
+    warnOnce('play-next', 'o comando "Tocar a seguir" não alterou a fila');
+    return false;
+}
+
 // ==========================================
 // Section 4: Message Handlers
 // ==========================================
@@ -301,14 +449,18 @@ window.addEventListener('message', (event) => {
 
     // Video ID request
     if (event.data?.type === 'YTM_GET_VIDEO_ID') {
-        let videoId = null;
-        try {
-            const playerBar = document.querySelector('ytmusic-player-bar');
-            videoId = playerBar?.playerApi?.getVideoData?.()?.video_id;
-        } catch (e) {
-            // Silent fail
-        }
-        window.postMessage({ type: 'YTM_VIDEO_ID_RESPONSE', videoId: videoId }, '*');
+        window.postMessage({ type: 'YTM_VIDEO_ID_RESPONSE', videoId: getCurrentVideoId() }, '*');
+    }
+
+    // Play next ("Tocar a seguir")
+    if (event.data?.type === 'YTM_PLAY_NEXT') {
+        const requestId = event.data.requestId;
+        const target = { videoId: event.data.videoId || null, playlistId: event.data.playlistId || null };
+        if (!target.videoId && !target.playlistId) return;
+
+        playNext(target).then(function (ok) {
+            window.postMessage({ type: 'YTM_PLAY_NEXT_RESULT', requestId: requestId, ok: ok }, '*');
+        });
     }
 });
 
@@ -320,8 +472,8 @@ window.addEventListener('message', (event) => {
  * Observe player changes.
  *
  * O YTM recria a player bar e o <video> durante a sessão (SPA/anúncios),
- * então os vínculos são verificados e re-adquiridos periodicamente —
- * senão a extração da próxima faixa morre em silêncio.
+ * então os vínculos são re-adquiridos sempre que o DOM muda — senão a
+ * extração da próxima faixa e o envio do tempo morrem em silêncio.
  */
 let mutationTimeout = null;
 function debouncedExtract() {
@@ -355,6 +507,9 @@ function ensurePlayerBindings() {
         video.dataset.ytmInterceptorBound = 'true';
         video.addEventListener('play', debouncedExtract);
         video.addEventListener('loadeddata', debouncedExtract);
+        video.addEventListener('timeupdate', postPlayerState);
+        video.addEventListener('seeked', postPlayerState);
+        video.addEventListener('loadeddata', postPlayerState);
     }
 }
 
@@ -362,5 +517,13 @@ function ensurePlayerBindings() {
 // Section 6: Initialization
 // ==========================================
 
+let bindingsTimeout = null;
+new MutationObserver(function () {
+    if (bindingsTimeout) return;
+    bindingsTimeout = setTimeout(function () {
+        bindingsTimeout = null;
+        ensurePlayerBindings();
+    }, 500);
+}).observe(document.documentElement, { childList: true, subtree: true });
+
 ensurePlayerBindings();
-setInterval(ensurePlayerBindings, 2000);

@@ -1,5 +1,6 @@
 /* ===========================================
    PIX Donation Modal Styles
+   (fontes em px: no YTM 1rem vale 10px; valores = antigos rem x 10)
    =========================================== */
 
 .focus-pix-btn {
@@ -14,7 +15,7 @@
     border: 1px solid rgba(0, 189, 174, 0.2);
     border-radius: 50%;
     color: #00bdae;
-    font-size: 0.85rem;
+    font-size: 8.5px;
     font-family: var(--ytm-focus-font-family);
     cursor: pointer;
     transition: all 0.3s var(--ease-out-expo);
@@ -96,14 +97,14 @@
 
 .pix-modal h2 {
     color: #fff;
-    font-size: 1.5rem;
+    font-size: 15px;
     margin: 0 0 10px 0;
     font-weight: 600;
 }
 
 .pix-modal p {
     color: rgba(255, 255, 255, 0.7);
-    font-size: 0.9rem;
+    font-size: 9px;
     margin: 0 0 25px 0;
 }
 
@@ -128,7 +129,7 @@
 .pix-key {
     flex: 1;
     color: rgba(255, 255, 255, 0.8);
-    font-size: 0.85rem;
+    font-size: 8.5px;
     font-family: monospace;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -141,7 +142,7 @@
     border-radius: 8px;
     padding: 8px 16px;
     color: #fff;
-    font-size: 0.8rem;
+    font-size: 8px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
@@ -155,6 +156,6 @@
 
 .pix-thanks {
     color: rgba(255, 255, 255, 0.5);
-    font-size: 0.85rem;
+    font-size: 8.5px;
     margin: 0;
 }

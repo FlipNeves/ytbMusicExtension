@@ -2,33 +2,17 @@
    Base Styles & Animations
    =========================================== */
 
-body::after {
-    content: "";
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: var(--minha-cor-tema);
-    opacity: 0.05;
-    pointer-events: none;
-    z-index: 9998;
-    mix-blend-mode: overlay;
-    transition: background-color 1s ease;
+/* Cor da capa em detalhes do próprio YTM (barra de progresso, chips, botão
+   de play e título da faixa). Opcional: a classe no <html> vem da preferência
+   "Usar a cor da capa no YouTube Music". */
+html.fmp-tint-ytm ytmusic-chip-cloud-chip-renderer[aria-selected="true"],
+html.fmp-tint-ytm ytmusic-play-button-renderer,
+html.fmp-tint-ytm #progress-bar.ytmusic-player-bar {
+    --ytmusic-color-white1: var(--ytm-focus-accent) !important;
 }
 
-ytmusic-chip-cloud-chip-renderer[aria-selected="true"],
-ytmusic-play-button-renderer,
-#progress-bar.ytmusic-player-bar {
-    --ytmusic-color-white1: var(--minha-cor-tema) !important;
-}
-
-.title.ytmusic-player-bar {
-    color: var(--minha-cor-tema) !important;
-}
-
-body.focus-mode-active {
-    overflow: hidden !important;
+html.fmp-tint-ytm .title.ytmusic-player-bar {
+    color: var(--ytm-focus-accent) !important;
 }
 
 ytmusic-mealbar-promo-renderer {
@@ -58,16 +42,6 @@ ytmusic-mealbar-promo-renderer {
 
     to {
         opacity: 1;
-    }
-}
-
-@keyframes breathe {
-    0% {
-        transform: scale(1);
-    }
-
-    100% {
-        transform: scale(1.05);
     }
 }
 

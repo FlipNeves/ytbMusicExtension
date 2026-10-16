@@ -16,8 +16,13 @@
 }
 
 #btn-cinema-mode:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: #fff;
+    background: color-mix(in srgb, var(--fmp-brand) 14%, transparent);
+    color: var(--fmp-brand-text);
+}
+
+#btn-cinema-mode:focus-visible {
+    outline: 2px solid var(--fmp-brand);
+    outline-offset: 2px;
 }
 
 #btn-cinema-mode svg {
@@ -158,7 +163,7 @@
     backdrop-filter: blur(10px);
     color: var(--ytm-focus-primary);
     font-family: var(--ytm-focus-font-family);
-    font-size: 0.95rem;
+    font-size: 16px; /* maior que o resto do modo foco de propósito */
     font-weight: 500;
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
@@ -184,7 +189,7 @@
 
 .focus-hud-bar-fill {
     height: 100%;
-    background: var(--ytm-focus-primary);
+    background: var(--ytm-focus-accent);
     border-radius: 2px;
     transition: width 0.1s linear;
 }
@@ -236,7 +241,7 @@ body.ytm-focus-video-active #focus-overlay .focus-album-container {
     margin: 0;
     color: rgba(255, 255, 255, 0.4);
     font-family: var(--ytm-focus-font-family);
-    font-size: 0.7rem;
+    font-size: 7px;
     letter-spacing: 0.3px;
     text-align: right;
     pointer-events: none;

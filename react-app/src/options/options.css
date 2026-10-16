@@ -1,0 +1,207 @@
+/* ===========================================
+   Página de opções — mesma linguagem do modo foco
+   (fundo escuro, vidro fosco, cor da marca)
+   =========================================== */
+
+:root {
+    /* Mesmos tokens de marca do modo foco (styles/variables.css) */
+    --fmp-brand: #e02238;
+    --fmp-brand-text: #ff4d5e;
+    --fmp-on-brand: #ffffff;
+    --text: #ffffff;
+    --text-secondary: rgba(255, 255, 255, 0.68);
+    --surface: rgba(255, 255, 255, 0.05);
+    --border: rgba(255, 255, 255, 0.09);
+    color-scheme: dark;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-width: 360px;
+    background: #111114;
+    color: var(--text);
+    font-family: 'Roboto', 'Segoe UI', system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.45;
+}
+
+.options {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 24px 20px 28px;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+.options.loaded {
+    opacity: 1;
+}
+
+.options-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.options-logo {
+    display: block;
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+}
+
+.options-header h1 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.options-header p {
+    margin: 2px 0 0;
+    color: var(--text-secondary);
+}
+
+.options-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 6px 16px;
+    margin-bottom: 14px;
+}
+
+.options-section h2 {
+    margin: 12px 0 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--fmp-brand-text);
+}
+
+.option-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 0;
+}
+
+.option-row + .option-row {
+    border-top: 1px solid var(--border);
+}
+
+.option-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.option-label {
+    font-weight: 500;
+}
+
+.option-description {
+    color: var(--text-secondary);
+    font-size: 0.86rem;
+}
+
+.options-hint {
+    margin: 0 0 12px;
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+}
+
+/* ---- Interruptor ---- */
+
+.switch {
+    position: relative;
+    flex-shrink: 0;
+    width: 42px;
+    height: 24px;
+    border: none;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.18);
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.switch.on {
+    background: var(--fmp-brand);
+}
+
+.switch-thumb {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    transition: transform 0.2s ease;
+}
+
+.switch.on .switch-thumb {
+    transform: translateX(18px);
+    background: var(--fmp-on-brand);
+}
+
+.switch:focus-visible,
+.link-button:focus-visible {
+    outline: 2px solid var(--fmp-brand);
+    outline-offset: 2px;
+}
+
+/* ---- Atalho ---- */
+
+.shortcut {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+kbd {
+    padding: 4px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.08);
+    font-family: inherit;
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+.link-button {
+    border: none;
+    background: none;
+    color: var(--fmp-brand-text);
+    font: inherit;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
+}
+
+.link-button:hover {
+    text-decoration: underline;
+}
+
+.options-footer {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    text-align: center;
+    margin-top: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .options,
+    .switch,
+    .switch-thumb {
+        transition: none;
+    }
+}

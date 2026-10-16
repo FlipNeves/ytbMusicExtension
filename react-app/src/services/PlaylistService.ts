@@ -6,6 +6,8 @@
  * <a href>: a navegação SPA acontece clicando no tp-yt-paper-item interno.
  */
 
+import { SELECTORS } from '../constants';
+
 export interface SidebarPlaylist {
     /** Nome da playlist (ou "Nova playlist") */
     title: string;
@@ -26,8 +28,7 @@ const isPlaylistHref = (href: string): boolean =>
  */
 export const getSidebarPlaylists = (): SidebarPlaylist[] => {
     // #guide-renderer é o guide completo; #mini-guide-renderer é o rail recolhido
-    const guide = document.querySelector('ytmusic-guide-renderer#guide-renderer')
-        || document.querySelector('#guide-renderer');
+    const guide = document.querySelector(SELECTORS.GUIDE);
     if (!guide) return [];
 
     const seen = new Set<string>();

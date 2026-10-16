@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="red" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f3435a"/>
+      <stop offset="1" stop-color="#e5263e"/>
+    </linearGradient>
+    <!-- Nota recortada do play: o fundo aparece através dela. -->
+    <mask id="note">
+      <rect width="128" height="128" fill="#fff"/>
+      <g fill="#000">
+        <rect x="52.5" y="50" width="3.6" height="25"/>
+        <rect x="69.5" y="44" width="3.6" height="25"/>
+        <path d="M52.5 51 73.1 43.3V51L52.5 58.7z"/>
+        <circle cx="49.6" cy="74.4" r="5.6"/>
+        <circle cx="66.6" cy="68.4" r="5.6"/>
+      </g>
+    </mask>
+  </defs>
+  <rect width="128" height="128" rx="4" fill="#202529"/>
+  <!-- Cantos do modo foco; traço de 8 em x/y 8–16 cai inteiro em pixels a 16 e 32 px. -->
+  <g fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 40V26a14 14 0 0 1 14-14h14"/>
+    <path d="M88 12h14a14 14 0 0 1 14 14v14"/>
+    <path d="M116 88v14a14 14 0 0 1-14 14H88"/>
+    <path d="M40 116H26a14 14 0 0 1-14-14V88"/>
+  </g>
+  <g transform="translate(66 64) scale(1.02) translate(-64 -64)" mask="url(#note)">
+    <path d="M40 37v54l47-27z" fill="url(#red)" stroke="url(#red)" stroke-width="7" stroke-linejoin="round"/>
+  </g>
+</svg>

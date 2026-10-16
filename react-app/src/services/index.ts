@@ -1,13 +1,12 @@
 /**
  * Services barrel export
- * 
+ *
  * @module services
  */
 
 // Color extraction and theming
 export {
     extractColor,
-    adjustColorBrightness,
     applyThemeColor,
     setAlbumArtVariable,
     extractAndApplyTheme,
@@ -26,8 +25,12 @@ export {
     seekTo,
     getVideoId,
     onNextTrackUpdate,
-    onApiResponse,
+    onPlayerState,
+    playNext,
 } from './YTMBridge';
+
+// Share link of the current track
+export { getCurrentTrackUrl } from './ShareService';
 
 // Multiple listening sessions
 export { sessionService } from './SessionService';
@@ -40,4 +43,5 @@ export {
     normalizeArtist,
     clearCache as clearLyricsCache,
     isInCache as isLyricsInCache,
+    LyricsUnavailableError,
 } from './LyricsService';

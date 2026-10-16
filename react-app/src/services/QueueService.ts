@@ -7,6 +7,8 @@
  * ou `play-button-state`).
  */
 
+import { SELECTORS } from '../constants';
+
 export interface QueueTrack {
     /** Título da faixa */
     title: string;
@@ -19,9 +21,9 @@ export interface QueueTrack {
 }
 
 const getQueueItems = (): HTMLElement[] => {
-    const queue = document.querySelector('ytmusic-player-queue');
+    const queue = document.querySelector(SELECTORS.QUEUE);
     if (!queue) return [];
-    return Array.from(queue.querySelectorAll<HTMLElement>('ytmusic-player-queue-item'));
+    return Array.from(queue.querySelectorAll<HTMLElement>(SELECTORS.QUEUE_ITEM));
 };
 
 const findCurrentIndex = (items: HTMLElement[]): number => {
@@ -84,8 +86,8 @@ export const getUpcomingTracks = (limit = 20): QueueTrack[] => {
 
     const tracks = upcoming
         .map((item) => ({
-            title: item.querySelector('.song-title, .title')?.textContent?.trim() || '',
-            artist: item.querySelector('.byline')?.textContent?.split('•')[0]?.trim() || '',
+            title: item.querySelector(SELECTORS.QUEUE_ITEM_TITLE)?.textContent?.trim() || '',
+            artist: item.querySelector(SELECTORS.QUEUE_ITEM_BYLINE)?.textContent?.split('•')[0]?.trim() || '',
             element: item,
             isVideo: isVideoThumbnail(item),
         }))
@@ -99,6 +101,6 @@ export const getUpcomingTracks = (limit = 20): QueueTrack[] => {
  */
 export const playQueueTrack = (track: QueueTrack): void => {
     if (!track.element.isConnected) return;
-    const playButton = track.element.querySelector<HTMLElement>('ytmusic-play-button-renderer');
+    const playButton = track.element.querySelector<HTMLElement>(SELECTORS.QUEUE_ITEM_PLAY);
     (playButton || track.element).click();
 };

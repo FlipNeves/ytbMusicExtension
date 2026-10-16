@@ -1,0 +1,14 @@
+{
+    "extName": {
+        "message": "Focus Mode for YouTube Music"
+    },
+    "extDescription": {
+        "message": "Full-screen focus mode for YouTube Music: large cover art, synced lyrics and controls. Great on a second screen."
+    },
+    "actionTitle": {
+        "message": "Open YouTube Music"
+    },
+    "toggleFocusCommand": {
+        "message": "Open/close focus mode"
+    }
+}

@@ -26,3 +26,6 @@ coverage
 *.njsproj
 *.sln
 *.sw?
+
+# Configuração local do Claude Code (permissões da máquina)
+.claude/settings.local.json

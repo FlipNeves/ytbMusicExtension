@@ -15,6 +15,10 @@ import {
     setPlayerPageOpen,
 } from '../../services/VideoModeService';
 import { formatTime } from '../../services';
+import { SELECTORS } from '../../constants';
+import { sessionService } from '../../services/SessionService';
+import { getPreloadedPreferences } from '../../services/PreferencesService';
+import { usePreferences } from '../../hooks/usePreferences';
 
 interface HudState {
     kind: 'volume' | 'seek';
@@ -37,18 +41,32 @@ const VIDEO_MODE_CLASS = 'ytm-focus-video-active';
 
 const FocusMode = () => {
     const [isActive, setIsActive] = useState(false);
-    const [showLyrics, setShowLyrics] = useState(false);
-    const [showVideo, setShowVideo] = useState(false);
+    // Letra e vídeo voltam como estavam na última vez (preferência lembrada)
+    const [showLyrics, setShowLyrics] = useState(() => getPreloadedPreferences().showLyrics);
+    const [showVideo, setShowVideo] = useState(() => getPreloadedPreferences().showVideo);
+    const { preferences, update: updatePreferences } = usePreferences();
     const { songInfo, isPlaying, upNextInfo, volume, isLiked, setVolume, toggleLike, seekTo, playPause, next, prev } = useYTMObserver();
 
     const visualizerRef = useRef<HTMLDivElement>(null);
     useVisualizer(visualizerRef, isPlaying && isActive);
 
     // Refs para o handler de teclado não precisar re-registrar a cada mudança de estado
-    const stateRef = useRef({ volume, currentTimeSec: songInfo.currentTimeSec, duration: songInfo.duration });
+    const stateRef = useRef({ volume, currentTimeSec: songInfo.currentTimeSec, duration: songInfo.duration, title: songInfo.title });
     useEffect(() => {
-        stateRef.current = { volume, currentTimeSec: songInfo.currentTimeSec, duration: songInfo.duration };
-    }, [volume, songInfo.currentTimeSec, songInfo.duration]);
+        stateRef.current = { volume, currentTimeSec: songInfo.currentTimeSec, duration: songInfo.duration, title: songInfo.title };
+    }, [volume, songInfo.currentTimeSec, songInfo.duration, songInfo.title]);
+
+    // Atalho de teclado da extensão (chrome.commands, via background)
+    useEffect(() => sessionService.onFocusToggle(() => setIsActive((prev) => !prev)), []);
+
+    // "Abrir o modo foco quando a música começar": uma vez por página, para
+    // não reabrir depois que a pessoa fechar (ajuste de estado no render,
+    // padrão do React para reagir a mudanças de props/estado)
+    const [autoOpenDone, setAutoOpenDone] = useState(false);
+    if (preferences.autoOpenFocus && isPlaying && !autoOpenDone) {
+        setAutoOpenDone(true);
+        setIsActive(true);
+    }
 
     // HUD de feedback dos atalhos de teclado (volume/seek)
     const [hud, setHud] = useState<HudState | null>(null);
@@ -99,7 +117,9 @@ const FocusMode = () => {
                     case 'ArrowRight': {
                         e.preventDefault();
                         e.stopPropagation();
-                        const target = Math.min(duration || 0, currentTimeSec + 10);
+                        // Duração desconhecida = troca de faixa em andamento: não há posição confiável
+                        if (duration <= 0) break;
+                        const target = Math.min(duration, currentTimeSec + 10);
                         seekTo(target);
                         showHud({ kind: 'seek', value: 0, text: `+10s · ${formatTime(target)}`, direction: 'forward' });
                         break;
@@ -107,6 +127,7 @@ const FocusMode = () => {
                     case 'ArrowLeft': {
                         e.preventDefault();
                         e.stopPropagation();
+                        if (duration <= 0) break;
                         const target = Math.max(0, currentTimeSec - 10);
                         seekTo(target);
                         showHud({ kind: 'seek', value: 0, text: `-10s · ${formatTime(target)}`, direction: 'back' });
@@ -146,7 +167,15 @@ const FocusMode = () => {
     };
 
     const toggleLyricsPanel = () => {
-        setShowLyrics(prev => !prev);
+        const nextValue = !showLyrics;
+        setShowLyrics(nextValue);
+        updatePreferences({ showLyrics: nextValue });
+    };
+
+    const toggleVideo = () => {
+        const nextValue = !showVideo;
+        setShowVideo(nextValue);
+        updatePreferences({ showVideo: nextValue });
     };
 
     const handleLyricClick = (targetSeconds: number) => {
@@ -183,6 +212,23 @@ const FocusMode = () => {
         const pageWasOpen = isPlayerPageOpen();
         let everSwitched = false;
 
+        // A troca pela fila reinicia a faixa: volta à posição anterior, mas só
+        // se ainda for a mesma música e a posição couber nela. Na virada de
+        // faixa o estado pode ainda ser da música anterior, e o seek jogaria
+        // a nova para outro ponto.
+        const resumeAfterSwitch = (resumeAt: number) => {
+            const titleAtSwitch = stateRef.current.title;
+            const titleInPage = document.querySelector(SELECTORS.TITLE)?.textContent || '';
+            if (resumeAt <= 3 || titleInPage !== titleAtSwitch) return;
+
+            setTimeout(() => {
+                const { title, duration } = stateRef.current;
+                if (title === titleAtSwitch && resumeAt < duration - 1) {
+                    seekTo(resumeAt);
+                }
+            }, 2000);
+        };
+
         const enforce = () => {
             if (!isPlayerPageOpen()) setPlayerPageOpen(true);
             if (isVideoPlaybackActive()) return;
@@ -194,9 +240,7 @@ const FocusMode = () => {
                 const resumeAt = stateRef.current.currentTimeSec;
                 const method = switchPlayback('video');
                 if (method) everSwitched = true;
-                if (method === 'queue' && resumeAt > 3) {
-                    setTimeout(() => seekTo(resumeAt), 2000);
-                }
+                if (method === 'queue') resumeAfterSwitch(resumeAt);
             }
         };
 
@@ -209,9 +253,7 @@ const FocusMode = () => {
             if (everSwitched && isVideoPlaybackActive()) {
                 const resumeAt = stateRef.current.currentTimeSec;
                 const method = switchPlayback('audio');
-                if (method === 'queue' && resumeAt > 3) {
-                    setTimeout(() => seekTo(resumeAt), 2000);
-                }
+                if (method === 'queue') resumeAfterSwitch(resumeAt);
             }
             if (!pageWasOpen) setPlayerPageOpen(false);
         };
@@ -238,7 +280,7 @@ const FocusMode = () => {
         document.body.classList.add(VIDEO_MODE_CLASS);
 
         // z-index só se aplica a elementos posicionados
-        const pageEl = document.querySelector<HTMLElement>('ytmusic-player-page');
+        const pageEl = document.querySelector<HTMLElement>(SELECTORS.PLAYER_PAGE);
         const pageWasStatic = pageEl ? getComputedStyle(pageEl).position === 'static' : false;
         if (pageEl && pageWasStatic) {
             pageEl.style.position = 'relative';
@@ -246,7 +288,7 @@ const FocusMode = () => {
 
         const syncPosition = () => {
             const slot = document.querySelector('#focus-overlay .focus-album-container');
-            const video = document.querySelector('ytmusic-player video');
+            const video = document.querySelector(SELECTORS.PLAYER_VIDEO);
             if (!slot || !video) return;
             const rect = slot.getBoundingClientRect();
             root.style.setProperty('--focus-video-width', `${Math.round(rect.width)}px`);
@@ -319,7 +361,7 @@ const FocusMode = () => {
                             onToggleLyrics={toggleLyricsPanel}
                             canToggleVideo={videoAvailable}
                             showVideo={showVideo}
-                            onToggleVideo={() => setShowVideo((prev) => !prev)}
+                            onToggleVideo={toggleVideo}
                         />
 
                         <UpNext {...upNextInfo} />

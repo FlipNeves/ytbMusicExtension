@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
-import { getVideoId } from '../../services';
+import { getCurrentTrackUrl } from '../../services';
+import { MESSAGES, TIMING } from '../../constants';
 
 interface PlayerProps {
     albumArt: string;
@@ -27,14 +28,13 @@ const Player: React.FC<PlayerProps> = ({
     const progressRef = useRef<HTMLDivElement>(null);
     const [hovered, setHovered] = useState(false);
     const [thumbX, setThumbX] = useState(0);
-    const [copied, setCopied] = useState(false);
+    const [shareToast, setShareToast] = useState<string | null>(null);
 
     const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
         if (!onSeek || !duration) return;
         const rect = e.currentTarget.getBoundingClientRect();
-        const clickX = e.clientX - rect.left;
-        const percentage = clickX / rect.width;
-        onSeek(percentage * duration);
+        const fraction = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+        onSeek(fraction * duration);
     };
 
     const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -45,19 +45,24 @@ const Player: React.FC<PlayerProps> = ({
         setThumbX(x);
     };
 
+    const showShareToast = (message: string) => {
+        setShareToast(message);
+        setTimeout(() => setShareToast(null), TIMING.TOAST_DURATION);
+    };
+
     const handleShare = async () => {
-        let url = window.location.href;
-        const videoId = await getVideoId();
-        if (videoId) {
-            url = `https://music.youtube.com/watch?v=${videoId}`;
+        // Sem o id da faixa não há link certo: avisa em vez de copiar a URL da página
+        const url = await getCurrentTrackUrl();
+        if (!url) {
+            showShareToast(MESSAGES.LINK_UNAVAILABLE);
+            return;
         }
 
         try {
             await navigator.clipboard.writeText(url);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
+            showShareToast(MESSAGES.LINK_COPIED);
         } catch {
-            console.error('Falha ao copiar link');
+            showShareToast(MESSAGES.COPY_FAILED);
         }
     };
 
@@ -127,8 +132,8 @@ const Player: React.FC<PlayerProps> = ({
                     </button>
                 )}
 
-                {copied && (
-                    <div className="focus-copied-toast">Link copiado!</div>
+                {shareToast && (
+                    <div className="focus-copied-toast" role="status">{shareToast}</div>
                 )}
             </div>
 

@@ -1,18 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
+import { SELECTORS } from '../../constants';
+import { watchDom } from '../../services/DomWatcher';
 import './styles/browser-nav.css';
 
 const BrowserNavButtons: React.FC = () => {
     const [target, setTarget] = useState<Element | null>(null);
 
     useEffect(() => {
-        // Mantém o intervalo ativo: se a SPA do YTM recriar a nav bar,
-        // o container é recriado e o portal volta a renderizar.
+        // Se a SPA do YTM recriar a nav bar, o container é recriado
+        // e o portal volta a renderizar.
         const ensureContainer = () => {
             const existing = document.getElementById('btn-browser-nav-container');
             if (existing?.isConnected) return;
 
-            const leftContent = document.querySelector('ytmusic-nav-bar .left-content') || document.querySelector('ytmusic-nav-bar');
+            const leftContent = document.querySelector(SELECTORS.NAV_LEFT) || document.querySelector(SELECTORS.NAV_BAR);
             if (leftContent) {
                 const btnContainer = document.createElement('div');
                 btnContainer.id = 'btn-browser-nav-container';
@@ -28,7 +30,7 @@ const BrowserNavButtons: React.FC = () => {
                 return;
             }
 
-            const rightControls = document.querySelector('.right-controls-buttons');
+            const rightControls = document.querySelector(SELECTORS.RIGHT_CONTROLS);
             if (rightControls) {
                 const btnContainer = document.createElement('div');
                 btnContainer.id = 'btn-browser-nav-container';
@@ -38,10 +40,7 @@ const BrowserNavButtons: React.FC = () => {
             }
         };
 
-        ensureContainer();
-        const interval = setInterval(ensureContainer, 1000);
-
-        return () => clearInterval(interval);
+        return watchDom(ensureContainer);
     }, []);
 
     if (!target) {

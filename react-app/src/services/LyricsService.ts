@@ -1,6 +1,6 @@
 /**
  * LyricsService - Lyrics fetching and caching
- * 
+ *
  * Single Responsibility: Fetch, parse, and cache lyrics from lrclib.net
  */
 
@@ -48,26 +48,29 @@ export const normalizeArtist = (artist: string): string => {
         .trim();
 };
 
+/** [mm:ss], [mm:ss.x], [mm:ss.xx] ou [mm:ss.xxx] (também com ':' antes da fração) */
+const LRC_TIMESTAMP = /\[(\d+):(\d{1,2})(?:[.:](\d{1,3}))?\]/g;
+
 /**
- * Parse LRC format lyrics into structured data
+ * Parse LRC format lyrics into structured data.
+ * A fração vale pelo número de dígitos (".5" = 0,5 s; ".345" = 0,345 s) e uma
+ * linha pode ter vários tempos (refrões repetidos).
  */
 export const parseLRC = (lrc: string): LyricLine[] => {
     const lines: LyricLine[] = [];
-    const regex = /\[(\d+):(\d+)\.(\d+)\](.*)/;
 
-    lrc.split('\n').forEach((line) => {
-        const match = line.match(regex);
-        if (match) {
-            const minutes = parseInt(match[1], 10);
-            const seconds = parseInt(match[2], 10);
-            const ms = parseInt(match[3], 10);
-            const time = minutes * 60 + seconds + ms / 100;
-            const text = match[4].trim();
-            if (text) {
-                lines.push({ time, text });
-            }
+    for (const rawLine of lrc.split(/\r?\n/)) {
+        const stamps = [...rawLine.matchAll(LRC_TIMESTAMP)];
+        if (stamps.length === 0) continue;
+
+        const text = rawLine.replace(LRC_TIMESTAMP, '').trim();
+        if (!text) continue;
+
+        for (const [, minutes, seconds, fraction = ''] of stamps) {
+            const fractionSeconds = fraction ? parseInt(fraction, 10) / 10 ** fraction.length : 0;
+            lines.push({ time: parseInt(minutes, 10) * 60 + parseInt(seconds, 10) + fractionSeconds, text });
         }
-    });
+    }
 
     return lines.sort((a, b) => a.time - b.time);
 };
@@ -80,6 +83,26 @@ const getCacheKey = (title: string, artist: string): string => {
 };
 
 /**
+ * Resultado de uma consulta ao lrclib: "missing" é resposta definitiva (pode
+ * ir para o cache); "error" é falha de rede/servidor (não pode).
+ */
+type Lookup =
+    | { status: 'found'; data: LyricsApiResponse }
+    | { status: 'missing' }
+    | { status: 'error' };
+
+/** Falha de rede/servidor ao buscar a letra (nada foi guardado no cache) */
+export class LyricsUnavailableError extends Error {
+    constructor() {
+        super('Lyrics service unavailable');
+        this.name = 'LyricsUnavailableError';
+    }
+}
+
+const hasLyrics = (data: LyricsApiResponse | null | undefined): data is LyricsApiResponse =>
+    !!data && !!(data.syncedLyrics || data.plainLyrics);
+
+/**
  * Try to fetch lyrics using the /api/get endpoint
  */
 const tryGetEndpoint = async (
@@ -87,7 +110,7 @@ const tryGetEndpoint = async (
     artistName: string,
     duration: number | undefined,
     signal: AbortSignal
-): Promise<LyricsApiResponse | null> => {
+): Promise<Lookup> => {
     try {
         let url = `https://lrclib.net/api/get?track_name=${encodeURIComponent(trackName)}&artist_name=${encodeURIComponent(artistName)}`;
 
@@ -97,15 +120,13 @@ const tryGetEndpoint = async (
 
         const response = await fetch(url, { signal });
 
-        if (!response.ok) return null;
+        if (response.status === 404) return { status: 'missing' };
+        if (!response.ok) return { status: 'error' };
 
         const data = await response.json();
-        if (data.syncedLyrics || data.plainLyrics) {
-            return data;
-        }
-        return null;
+        return hasLyrics(data) ? { status: 'found', data } : { status: 'missing' };
     } catch {
-        return null;
+        return { status: 'error' };
     }
 };
 
@@ -116,31 +137,31 @@ const trySearchEndpoint = async (
     trackName: string,
     artistName: string,
     signal: AbortSignal
-): Promise<LyricsApiResponse | null> => {
+): Promise<Lookup> => {
     try {
         const url = `https://lrclib.net/api/search?track_name=${encodeURIComponent(trackName)}&artist_name=${encodeURIComponent(artistName)}`;
 
         const response = await fetch(url, { signal });
 
-        if (!response.ok) return null;
+        if (!response.ok) return { status: 'error' };
 
-        const results = await response.json();
+        const results: unknown = await response.json();
+        if (!Array.isArray(results)) return { status: 'missing' };
 
-        if (Array.isArray(results) && results.length > 0) {
-            // Prefer results with synced lyrics
-            const bestMatch = results.find((r: LyricsApiResponse) => r.syncedLyrics) || results[0];
-            return bestMatch;
-        }
-        return null;
+        // Prefer results with synced lyrics
+        const candidates = results as LyricsApiResponse[];
+        const bestMatch = candidates.find((r) => r.syncedLyrics) || candidates.find(hasLyrics);
+        return bestMatch ? { status: 'found', data: bestMatch } : { status: 'missing' };
     } catch {
-        return null;
+        return { status: 'error' };
     }
 };
 
 /**
  * Fetch lyrics for a song
- * Attempts /api/get first, then falls back to /api/search
- * Results are cached to avoid redundant API calls
+ * Attempts /api/get first, then falls back to /api/search.
+ * Results are cached to avoid redundant API calls; network/server failures
+ * are not — they throw LyricsUnavailableError, so the next attempt retries.
  */
 export const fetchLyrics = async (
     title: string,
@@ -158,16 +179,21 @@ export const fetchLyrics = async (
     const cleanArtist = normalizeArtist(artist);
     const abortSignal = signal || new AbortController().signal;
 
-    let data = await tryGetEndpoint(cleanTitle, cleanArtist, duration, abortSignal);
+    let lookup = await tryGetEndpoint(cleanTitle, cleanArtist, duration, abortSignal);
 
-    if (!data && !abortSignal.aborted) {
-        data = await trySearchEndpoint(cleanTitle, cleanArtist, abortSignal);
+    if (lookup.status !== 'found' && !abortSignal.aborted) {
+        lookup = await trySearchEndpoint(cleanTitle, cleanArtist, abortSignal);
     }
 
     if (abortSignal.aborted) {
         throw new DOMException('Aborted', 'AbortError');
     }
 
+    if (lookup.status === 'error') {
+        throw new LyricsUnavailableError();
+    }
+
+    const data = lookup.status === 'found' ? lookup.data : null;
     let result: LyricsResult;
 
     if (data?.syncedLyrics) {

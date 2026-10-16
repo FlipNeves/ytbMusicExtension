@@ -11,10 +11,12 @@ export { useYTMObserver } from './useYTMObserver';
 export { useSongState } from './useSongState';
 export { usePlayerControls } from './usePlayerControls';
 export { useUpNext } from './useUpNext';
-export { useTimeState } from './useTimeState';
 
 // Visualizer hook
 export { useVisualizer } from './useVisualizer';
 
 // Sidebar
 export { useAutoCollapseSidebar } from './useAutoCollapseSidebar';
+
+// Extension preferences
+export { usePreferences } from './usePreferences';
