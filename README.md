@@ -37,7 +37,7 @@ Immersive full-screen interface that eliminates visual distractions:
 
 - **Featured album cover** with an ambient blurred backdrop
 - **Smooth animation** for transitions between songs
-- **Dynamic theme** - progress bar, visualizer and highlights take the album's accent color
+- **Dynamic theme** - visualizer and highlights take the album's accent color
 - **Fluid layout** - scales from small laptops to ultrawide monitors
 - **Keyboard shortcuts** - `Alt+Shift+F` opens/closes it from any browser window; `ESC` to exit, `Space` to play/pause, arrows to seek and change volume
 - **Remembers your layout** - the lyrics panel and video mode come back as you left them
@@ -215,6 +215,15 @@ The content script is built separately as a single IIFE: scripts declared in the
 The extension is available in the extension stores:
 
 - [Microsoft Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/focus-music-player/pldfnpciekkfilhlaeoncmejmdhkhjci)
+
+**Chrome, Brave, Opera and other Chromium browsers (manual install):**
+
+1. Download the `.zip` from the [latest release](https://github.com/FlipNeves/ytbMusicExtension/releases/latest)
+2. Extract it to a folder you will keep (the extension stops working if the folder is deleted)
+3. Go to `chrome://extensions` and enable **Developer mode**
+4. Click on **Load unpacked** and select the extracted `dist` folder
+
+Manual installs do not update automatically. To update, extract the new `.zip` over the same folder and click the reload button on the extension card; your settings are kept.
 
 ---
 
